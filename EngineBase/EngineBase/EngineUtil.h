@@ -173,8 +173,8 @@ public:
 		worldViewProject = project * worldView;
 	}
     
-	void translateGlobal(glm::vec3 &t) { eye += t; center += t; }
-	void translateLocal(glm::vec3 &t) {
+	void translateGlobal(glm::vec3 t) { eye += t; center += t; }
+	void translateLocal(glm::vec3 t) {
 		glm::vec3 zz = glm::normalize(eye - center);
 		glm::vec3 xx = glm::normalize(glm::cross(vup, zz));
 		glm::vec3 yy = glm::cross(zz, xx);
@@ -526,20 +526,20 @@ public:
 	vector<Billboard*> bboards;
 	vector<Camera> cameras;
     
-    void updateFirstPerson(Camera &camera, float width, float height)
+    void updateFirstPerson(int width, int height)
     {
         
         
         if(player != NULL)
         {
-            if(!isFPCam)
-            {
+           if(!isFPCam)
+           {
                 camera.eye = player->T.translation + ( player->T.rotation * glm::vec3(0,0,1)) * 20.0f + 5.0f * glm::vec3(0,1,0);
                 camera.center = player->T.translation + 3.0f * glm::vec3(0,1,0);
                 camera.refreshTransform(width, height);
             }
             else
-            {
+           {
                 
                 camera.eye = player->T.translation + ( player->T.rotation * glm::vec3(0,0,1)) * 1.0f + -0.1f * glm::vec3(0,1,0);
                 camera.center = player->T.translation + 0.1f * glm::vec3(0,1,0);
@@ -625,9 +625,13 @@ public:
 
 		updateLights();
 
-		for (auto& x : nodes){
-			x.second->meshInst->draw(camera);
-		}
-		bboards[0]->draw(camera);
+		//for (auto& x : nodes){
+			//x.second->meshInst->draw(camera);
+            
+		//}
+        
+        meshInstances["floor"]->draw(camera);
+        player->draw(camera);
+		//bboards[0]->draw(camera);
 	}
 };

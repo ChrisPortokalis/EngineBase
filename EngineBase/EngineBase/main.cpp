@@ -85,6 +85,7 @@ void loadWorldSettings(FILE *F)
 void loadSceneSettings(FILE *F, Scene *scene)
 {
 	string token, t;
+
 	while (getToken(F, token, ONE_TOKENS)){
 		if (token == "}"){
 			break;
@@ -131,6 +132,7 @@ void loadMeshInstance(FILE *F, Scene *scene)
 	GLuint fragmentShader = NULL_HANDLE;
 	GLuint shaderProgram = NULL_HANDLE;
 	TriMeshInstance *meshInstance = new TriMeshInstance();
+        bool isPlayer = true;
 	//scene->addMeshInstance(meshInstance);
 
 	while (getToken(F, token, ONE_TOKENS)) {
@@ -189,11 +191,25 @@ void loadMeshInstance(FILE *F, Scene *scene)
 			getToken(F, name, ONE_TOKENS);
 			meshInstance->name = name;
 		}
+        else if(token == "player")
+        {
+            
+            isPlayer = true;
+        }
 	}
 
-	shaderProgram = createShaderProgram(vertexShader, fragmentShader);
-	meshInstance->mat.shaderProgram = shaderProgram;
-	scene->addMeshInstance(meshInstance);
+        shaderProgram = createShaderProgram(vertexShader, fragmentShader);
+        meshInstance->mat.shaderProgram = shaderProgram;
+    
+        if(isPlayer)
+        {
+            
+            gScene.player = meshInstance;
+        }
+
+        scene->addMeshInstance(meshInstance);
+            
+
 }
 
 void loadCamera(FILE *F, Scene *scene)
@@ -418,11 +434,17 @@ void update(void)
 {	
 	glm::vec3 cameraPos = gScene.camera.eye;
 	glm::vec3 cameraRot = gScene.camera.center;
-	engine->setListenerPosition(vec3df(cameraPos.x, cameraPos.y, cameraPos.z), vec3df(cameraRot.x, cameraRot.y, cameraRot.z) );
+    gScene.updateFirstPerson( gWidth, gHeight);
+    
+    if(gScene.player == NULL)
+    {
+       // cout << "player null" << endl;
+    }
+	//engine->setListenerPosition(vec3df(cameraPos.x, cameraPos.y, cameraPos.z), vec3df(cameraRot.x, cameraRot.y, cameraRot.z) );
 
-	gScene.nodes["parent"]->rotateLocal(glm::vec3(0, 1, 0), 0.03, false);
-	gScene.nodes["child"]->rotateGlobal(glm::vec3(0, 1, 0), 0.15, true);
-    gScene.updateListenerPos(engine);
+	//gScene.nodes["parent"]->rotateLocal(glm::vec3(0, 1, 0), 0.03, false);
+	//gScene.nodes["child"]->rotateGlobal(glm::vec3(0, 1, 0), 0.15, true);
+   // gScene.updateListenerPos(engine);
 }
 
 //-------------------------------------------------------------------------//
@@ -466,7 +488,8 @@ void cameraController(Camera &camera, int type){
             }
             else
             {
-               // camera.translateLocal(glm::vec3(0,0,-conT));
+                const glm::vec3 moveVec = glm::vec3(0,0,-1);
+                camera.translateLocal(glm::vec3(0,0,-1));
             }
             
         }
@@ -479,7 +502,7 @@ void cameraController(Camera &camera, int type){
             }
             else
             {
-               // camera.translateLocal(glm::vec3(0,0,1));
+               camera.translateLocal(glm::vec3(0,0,1));
             }
             
         }
@@ -492,7 +515,7 @@ void cameraController(Camera &camera, int type){
             }
             else
             {
-                //camera.translateLocal(glm::vec3(.2,0,0));
+                camera.translateLocal(glm::vec3(.2,0,0));
             }
             
         }
@@ -505,7 +528,7 @@ void cameraController(Camera &camera, int type){
             }
             else
             {
-                //camera.translateLocal(glm::vec3(-.2,0,0));
+                camera.translateLocal(glm::vec3(-.2,0,0));
             }
             
         }
@@ -615,11 +638,9 @@ int main(int numArgs, char **args)
 
 		double xx, yy;
 		glfwGetCursorPos(gWindow, &xx, &yy);
-		printf("%1.3f %1.3f ", xx, yy);
         
 		// print framerate
 		double endTime = TIME();
-		printf("\rFPS: %1.0f  ", 1.0/(endTime-startTime));
 		startTime = endTime;
         
 		// swap buffers
