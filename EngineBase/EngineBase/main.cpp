@@ -132,7 +132,6 @@ void loadMeshInstance(FILE *F, Scene *scene)
 	GLuint fragmentShader = NULL_HANDLE;
 	GLuint shaderProgram = NULL_HANDLE;
 	TriMeshInstance *meshInstance = new TriMeshInstance();
-        bool isPlayer = true;
 	//scene->addMeshInstance(meshInstance);
 
 	while (getToken(F, token, ONE_TOKENS)) {
@@ -191,22 +190,23 @@ void loadMeshInstance(FILE *F, Scene *scene)
 			getToken(F, name, ONE_TOKENS);
 			meshInstance->name = name;
 		}
-        else if(token == "player")
+        else if (token == "rotate"){
+            glm::vec3 rotVec;
+            getFloats(F, &rotVec[0], 3);
+            meshInstance->setRotation(glm::quat(rotVec));
+        }
+        else if(token == "sound")
         {
-            
-            isPlayer = true;
+            string soundFile;
+            getToken(F, soundFile, ONE_TOKENS);
+            meshInstance->setSound(soundFile, engine);
         }
 	}
 
         shaderProgram = createShaderProgram(vertexShader, fragmentShader);
         meshInstance->mat.shaderProgram = shaderProgram;
     
-        if(isPlayer)
-        {
-            
-            gScene.player = meshInstance;
-        }
-
+ 
         scene->addMeshInstance(meshInstance);
             
 
@@ -276,6 +276,8 @@ void loadLight(FILE *F, Scene *scene)
 void loadNode(FILE *F, Scene *scene){
 	string token;
 	Node *node = new Node();
+    bool isPlayer = false;
+    bool isChild = false;
 
 	while (getToken(F, token, ONE_TOKENS)) {
 		if (token == "}") break;
@@ -283,27 +285,34 @@ void loadNode(FILE *F, Scene *scene){
 
 			string name;
 			getToken(F, name, ONE_TOKENS);
-			node = new Node(scene->getInstance(name));
+			//node = new Node(scene->getInstance(name));
+            node->meshInst = gScene.meshInstances[name];
 		}
 		else if (token == "name"){
 			string name;
 			getToken(F, name, ONE_TOKENS);
 			node->name = name;
+            cout << "Node Name: " << name << endl;
 		}
 		else if (token == "parent"){
 			string parent;
 			getToken(F, parent, ONE_TOKENS);
-			if (scene->nodes[parent] == NULL){
+            
+            cout << "Parent Name: " << parent << endl;
+			if (gScene.nodes.find(parent)->second == NULL && gScene.player != NULL){
 				printf("Error: Can't find parent\n");
 			}
 			else{
-				scene->nodes[parent]->addChildren(node);
+				gScene.nodes[parent]->addChildren(node);
+                node->parent = gScene.nodes[parent];
 			}
 		}
-
 	}
+    
 
-	scene->addNode(node);
+    scene->addNode(node);
+
+
 }
 
 
@@ -435,10 +444,11 @@ void update(void)
 	glm::vec3 cameraPos = gScene.camera.eye;
 	glm::vec3 cameraRot = gScene.camera.center;
     gScene.updateFirstPerson( gWidth, gHeight);
+    gScene.updateListenerPos(engine);
     
     if(gScene.player == NULL)
     {
-       // cout << "player null" << endl;
+       cout << "player null" << endl;
     }
 	//engine->setListenerPosition(vec3df(cameraPos.x, cameraPos.y, cameraPos.z), vec3df(cameraRot.x, cameraRot.y, cameraRot.z) );
 
@@ -461,6 +471,7 @@ void render(void)
 //-------------------------------------------------------------------------//
 
 void cameraController(Camera &camera, int type){
+    bool playerPresent = false;
 	if (glfwGetKey(gWindow, GLFW_KEY_1)){
 		gScene.updateCamera();
 		gScene.switchCamera(0);
@@ -473,6 +484,11 @@ void cameraController(Camera &camera, int type){
 		gScene.updateCamera();
 		gScene.switchCamera(2);
 	}
+    
+    if(gScene.nodes["player"] != NULL)
+    {
+        playerPresent = true;
+    }
 
 	if (type == KEYBOARD_CONTROL){
        const float t = 0.025f;
@@ -482,9 +498,9 @@ void cameraController(Camera &camera, int type){
         if (glfwGetKey(gWindow, 'W'))
         {
             
-            if(gScene.player != NULL)
+            if(playerPresent)
             {
-                gScene.player->T.translateLocal(glm::vec3(0, 0, -1), gScene.camera);
+                gScene.nodes["player"]->meshInst->T.translateLocal(glm::vec3(0, 0, -1), gScene.camera);
             }
             else
             {
@@ -496,9 +512,9 @@ void cameraController(Camera &camera, int type){
         
         if (glfwGetKey(gWindow, 'S'))
         {
-            if(gScene.player != NULL)
+            if(playerPresent)
             {
-                gScene.player->T.translateLocal(glm::vec3(0, 0, 1), gScene.camera);
+                gScene.nodes["player"]->meshInst->T.translateLocal(glm::vec3(0, 0, 1), gScene.camera);
             }
             else
             {
@@ -509,9 +525,9 @@ void cameraController(Camera &camera, int type){
         
         if (glfwGetKey(gWindow, 'D'))
         {
-            if(gScene.player != NULL)
+            if(playerPresent)
             {
-                gScene.player->T.translateLocal(glm::vec3(.2, 0, 0), gScene.camera);
+                gScene.nodes["player"]->meshInst->T.translateLocal(glm::vec3(.2, 0, 0), gScene.camera);
             }
             else
             {
@@ -522,9 +538,9 @@ void cameraController(Camera &camera, int type){
         
         if (glfwGetKey(gWindow, 'A'))
         {
-            if(gScene.player != NULL)
+            if(playerPresent)
             {
-                gScene.player->T.translateLocal(glm::vec3(-.2, 0, 0), camera);
+                gScene.nodes["player"]->meshInst->T.translateLocal(glm::vec3(-.2, 0, 0), camera);
             }
             else
             {
@@ -534,9 +550,9 @@ void cameraController(Camera &camera, int type){
         }
         if (glfwGetKey(gWindow, GLFW_KEY_DOWN))
         {
-            if(gScene.player != NULL)
+            if(playerPresent)
             {
-                gScene.player->T.rotateLocal(glm::vec3(1,0,0), -.01);
+                gScene.nodes["player"]->meshInst->T.rotateLocal(glm::vec3(1,0,0), -.01);
             }
             else
             {
@@ -545,9 +561,9 @@ void cameraController(Camera &camera, int type){
         }
         if (glfwGetKey(gWindow, GLFW_KEY_UP))
         {
-            if(gScene.player != NULL)
+            if(playerPresent)
             {
-                gScene.player->T.rotateLocal(glm::vec3(1,0,0), .01);
+                gScene.nodes["player"]->meshInst->T.rotateLocal(glm::vec3(1,0,0), .01);
             }
             else
             {
@@ -558,9 +574,9 @@ void cameraController(Camera &camera, int type){
         if (glfwGetKey(gWindow, GLFW_KEY_LEFT))
         {
             
-            if(gScene.player != NULL)
+            if(playerPresent)
             {
-                gScene.player->T.rotateGlobal(glm::vec3(0 ,1, 0), r);
+                gScene.nodes["player"]->meshInst->T.rotateGlobal(glm::vec3(0 ,1, 0), r);
             }
             else
             {
@@ -571,9 +587,9 @@ void cameraController(Camera &camera, int type){
         {
             
             
-            if(gScene.player != NULL)
+            if(playerPresent)
             {
-                gScene.player->T.rotateGlobal(glm::vec3(0,1,0), -r);
+                gScene.nodes["player"]->meshInst->T.rotateGlobal(glm::vec3(0,1,0), -r);
             }
             else
             {
@@ -618,11 +634,11 @@ int main(int numArgs, char **args)
 	// init current camera
 	gScene.switchCamera(0);
 
-	for (auto& x : gScene.nodes){
+	/*for (auto& x : gScene.nodes){
 		cout << "nodes created: ";
 		cout << x.second->name;
 		cout << "\n";
-	}
+	}*/
 
 	// render loop
 	while (true) {

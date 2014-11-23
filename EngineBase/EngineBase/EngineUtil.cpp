@@ -772,3 +772,93 @@ void Node::translateLocal(glm::vec3 &t, bool inverse){ //transforms just parent
 		cout << "That's no good\n";
 	}
 }
+
+
+void Node::draw(Camera &camera)
+{
+    this->meshInst->T.refreshTransform();
+    this->meshInst->mat.bindNodeMaterial(this, camera);
+    if (this->meshInst->triMesh != NULL) this->meshInst->triMesh->draw();
+    else printf("Error! Null Mesh.");
+}
+
+void Material::bindNodeMaterial(Node* node, Camera &camera)
+{
+    glUseProgram(shaderProgram);
+    
+    GLint loc;
+    
+    
+    if(node->parent == NULL)
+    {
+        loc = glGetUniformLocation(shaderProgram, "uObjectWorldM");
+        if (loc != -1) glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(node->meshInst->T.transform));
+        //
+        loc = glGetUniformLocation(shaderProgram, "uObjectWorldInverseM");
+        if (loc != -1) glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(node->meshInst->T.invTransform));
+        //
+        glm::mat4x4 objectWorldViewPerspect = camera.worldViewProject * node->meshInst->T.transform;
+        loc = glGetUniformLocation(shaderProgram, "uObjectPerpsectM");
+        if (loc != -1) glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(objectWorldViewPerspect));
+        
+        
+    }
+    else
+    {
+        loc = glGetUniformLocation(shaderProgram, "uObjectWorldM");
+        if (loc != -1) glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(node->parent->meshInst->T.transform * node->meshInst->T.transform ));
+        //
+        loc = glGetUniformLocation(shaderProgram, "uObjectWorldInverseM");
+        if (loc != -1) glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(node->meshInst->T.invTransform * node->parent->meshInst->T.invTransform));
+        //
+        glm::mat4x4 objectWorldViewPerspect = camera.worldViewProject * node->parent->meshInst->T.transform * node->meshInst->T.transform;
+        loc = glGetUniformLocation(shaderProgram, "uObjectPerpsectM");
+        if (loc != -1) glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(objectWorldViewPerspect));
+        
+        node->meshInst->T.transform = node->parent->meshInst->T.transform * node->meshInst->T.transform;
+        
+        if(node->name == "childofChild")
+        {
+            
+        }
+    }
+    
+    // MATERIAL COLORS
+    for (int i = 0; i < (int) colors.size(); i++) {
+        if (colors[i].id == -1) {
+            loc = glGetUniformLocation(shaderProgram, colors[i].name.c_str());
+            colors[i].id = loc;
+        }
+        if (colors[i].id >= 0) {
+            glUniform4fv(colors[i].id, 1, &colors[i].val[0]);
+        }
+    }
+    
+    loc = glGetUniformLocation(shaderProgram, "uView");
+    
+    glm::vec4 cameraNormal = glm::vec4(glm::normalize(camera.eye - camera.center), 0);
+    
+    if(loc != 0) glUniform4fv(loc, 1, glm::value_ptr(cameraNormal));
+    
+    
+    //printVec(color);
+    
+    
+    
+    
+    // MATERIAL TEXTURES
+    for (int i = 0; i < (int) textures.size(); i++) {
+        if (textures[i].id == -1) {
+            loc = glGetUniformLocation(shaderProgram, textures[i].name.c_str());
+            textures[i].id = loc;
+        }
+        if (textures[i].id >= 0) {
+            //printf("\n%d %d\n", textures[i].id, textures[i].val->samplerId);
+            glActiveTexture(GL_TEXTURE0 + i);
+            glUniform1i(textures[i].id, i);
+            glBindTexture(GL_TEXTURE_2D, textures[i].val->textureId);
+            glBindSampler(textures[i].id, textures[i].val->samplerId);
+        }
+    }
+}
+

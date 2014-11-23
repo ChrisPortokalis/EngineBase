@@ -39,6 +39,10 @@ using namespace std;
 using namespace irrklang;
 #pragma comment(lib, "irrKlang.lib")
 
+//forward declarations
+class Camera;
+class Node;
+
 //-------------------------------------------------------------------------//
 // MISCELLANEOUS
 //-------------------------------------------------------------------------//
@@ -323,6 +327,7 @@ public:
 	vector< NameIdVal<glm::vec4> > colors;
 	vector< NameIdVal<RGBAImage*> > textures;
 	void bindMaterial(Transform &T, Camera &camera);
+    void bindNodeMaterial(Node* node, Camera &camera);
 };
 
 //-------------------------------------------------------------------------//
@@ -353,7 +358,7 @@ public:
 	TriMesh *triMesh;
 	Transform T;
 	Material mat;
-    ISound* meshSound;
+    ISound* nodeSound;
 	
 public:
 	TriMeshInstance(void);
@@ -363,26 +368,24 @@ public:
 	void setRotation(const glm::quat &r) { T.rotation = r; }
 	void setTranslation(const glm::vec3 &t) { T.translation = t; }
     
-    
     void setSound(string fileName, ISoundEngine* sEngine) {
         
         vec3df meshPOS = vec3df(T.translation.x, T.translation.y, T.translation.z);
         
         cout << fileName << endl;
         
-        this->meshSound = sEngine->play3D(fileName.c_str(), meshPOS, true);
+        this->nodeSound = sEngine->play3D(fileName.c_str(), meshPOS, true);
         
-        if(meshSound )
+        if(nodeSound )
         {
-            
-            this->meshSound->setMinDistance(0);
-            this->meshSound->setMaxDistance(20.0);
-            
+            this->nodeSound->setMinDistance(-10.0);
+            this->nodeSound->setMaxDistance(20.0);
             sEngine->setSoundVolume(0.25f);
         }
-        
-        
     }
+    
+    
+
     
 	void draw(Camera &camera);
 };
@@ -467,16 +470,18 @@ class Node
 {
 public:
 	vector<Node*> children;
+    Node* parent;
 	string name;
 	int nodeType;
+   
 
 	TriMeshInstance *meshInst;
 
-	Node(){ nodeType = NULL; }
+    Node(){ nodeType = NULL; parent = NULL;}
 	Node(TriMeshInstance *_meshInst){ meshInst = _meshInst; nodeType = 0; }
 
 	void addChildren(Node *child){ children.push_back(child); }
-
+    void draw(Camera &camera);
 	void rotateLocal(glm::vec3 axis, float angle, bool inverse); //rotates just parent 
 	void rotateGlobal(glm::vec3 axis, float angle, bool inverse){ //rotates parent and children 
 		rotateLocal(axis, angle, !inverse);
@@ -496,6 +501,7 @@ public:
 			}
 		}
 	}
+
 };
 
 
@@ -515,7 +521,7 @@ public:
 	map<string, RGBAImage*> textures;
 	map<string, Node*> nodes;
 	map<string, TriMeshInstance*> meshInstances;
-    TriMeshInstance* player;
+    Node* player;
     TriMeshInstance* firstPerson;
     TriMeshInstance* thirdPerson;
     bool isFPCam;
@@ -530,19 +536,19 @@ public:
     {
         
         
-        if(player != NULL)
+        if(nodes["player"] != NULL)
         {
            if(!isFPCam)
            {
-                camera.eye = player->T.translation + ( player->T.rotation * glm::vec3(0,0,1)) * 20.0f + 5.0f * glm::vec3(0,1,0);
-                camera.center = player->T.translation + 3.0f * glm::vec3(0,1,0);
+                camera.eye = nodes["player"]->meshInst->T.translation + (nodes["player"]->meshInst->T.rotation * glm::vec3(0,0,1)) * 20.0f + 5.0f * glm::vec3(0,1,0);
+                camera.center = nodes["player"]->meshInst->T.translation + 3.0f * glm::vec3(0,1,0);
                 camera.refreshTransform(width, height);
             }
             else
            {
                 
-                camera.eye = player->T.translation + ( player->T.rotation * glm::vec3(0,0,1)) * 1.0f + -0.1f * glm::vec3(0,1,0);
-                camera.center = player->T.translation + 0.1f * glm::vec3(0,1,0);
+                camera.eye = player->meshInst->T.translation + ( player->meshInst->T.rotation * glm::vec3(0,0,1)) * 1.0f + -0.1f * glm::vec3(0,1,0);
+                camera.center = player->meshInst->T.translation + 0.1f * glm::vec3(0,1,0);
                 camera.refreshTransform(width, height);
                 
             }
@@ -557,9 +563,9 @@ public:
     
     void updateListenerPos(ISoundEngine* sEngine)
     {
-        if(player != NULL)
+        if(nodes["player"] != NULL)
         {
-            glm::mat4x4 rot = glm::toMat4(player->T.rotation);
+            glm::mat4x4 rot = glm::toMat4(nodes["player"]->meshInst->T.rotation);
             glm::vec4 xAxis = glm::vec4(1,0,0,0);
             glm::vec4 yAxis = glm::vec4(0,1,0,0);
             glm::vec4 zAxis = glm::vec4(0,0,1,0);
@@ -569,7 +575,17 @@ public:
             glm::vec4 locZ = rot * zAxis;
             
             vec3df listenerView = vec3df(locX.x, locY.y, locZ.z);
-            sEngine->setListenerPosition(vec3df(player->T.translation.x, player->T.translation.y, player->T.translation.z), listenerView);
+            sEngine->setListenerPosition(vec3df(nodes["player"]->meshInst->T.translation.x, nodes["player"]->meshInst->T.translation.y, nodes["player"]->meshInst->T.translation.z), listenerView);
+        }
+        else
+        {
+            glm::vec3 zz = glm::normalize(camera.eye - camera.center);
+            glm::vec3 xx = glm::normalize(glm::cross(camera.vup, zz));
+            glm::vec3 yy = glm::cross(zz, xx);
+            
+            
+            vec3df listenerView = vec3df(xx.x, yy.y, zz.z);
+            sEngine->setListenerPosition(vec3df(camera.eye.x, camera.eye.y, camera.eye.z), listenerView);
         }
         
     }
@@ -592,7 +608,11 @@ public:
 		else return NULL;
 	}
 	void addCamera(Camera c){cameras.push_back(c);}
-	void addNode(Node* node){ nodes[node->name] = node;}
+	void addNode(Node* node){ nodes[node->name] = node;
+    
+        //nodes.insert(nodes.begin(), nodes.find(node->name));
+    
+    }
 	Node *getNode(string &n){
 		if (nodes.find(n) != nodes.end()) return nodes[n];
 		else{
@@ -625,13 +645,48 @@ public:
 
 		updateLights();
 
-		//for (auto& x : nodes){
-			//x.second->meshInst->draw(camera);
-            
-		//}
+        renderNodes();
         
-        meshInstances["floor"]->draw(camera);
-        player->draw(camera);
+        if(meshInstances["floor"] != NULL)
+        {
+            meshInstances["floor"]->draw(camera);
+        }
+        if(player != NULL)
+        {
+            player->draw(camera);
+            renderNodes(player->children);
+        }
 		//bboards[0]->draw(camera);
 	}
+    
+    void renderNodes(void)
+    {
+
+        for (auto& x : nodes){
+            
+            if(x.second->parent == NULL)
+            {
+                x.second->draw(camera);
+                renderNodes(x.second->children);
+            }
+           
+        }
+        
+    }
+    
+    void renderNodes(vector<Node*> nodes)
+    {
+        
+        for (int i = 0; i < nodes.size(); i++){
+            
+            nodes[i]->draw(camera);
+            
+            if(nodes[i] != NULL)
+            {
+                renderNodes(nodes[i]->children);
+            }
+            
+        }
+        
+    }
 };
