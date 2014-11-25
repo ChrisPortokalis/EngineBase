@@ -862,3 +862,347 @@ void Material::bindNodeMaterial(Node* node, Camera &camera)
     }
 }
 
+
+
+
+
+
+//***************************************************************
+//Move Script Functions
+//***************************************************************
+
+/*void MoveScript::setValue(string property, void* value)
+ {
+    if(property == "move")
+    {
+        glm::vec3* vecptr = (glm::vec3*) value;
+        this->transVec = *vecptr;
+ 
+    }
+    else if(property == "scale")
+    {
+        glm::vec3* vecptr = (glm::vec3*) value;
+        this->scaleVec = *vecptr;
+ 
+ 
+    }
+    else if(property == "rotate")
+    {
+        glm::quat* quatptr = (glm::quat*) value;
+        this->rotQuat = *quatptr;
+ 
+    }
+ }*/
+
+//***************************************************************
+//Control Script Functions
+//***************************************************************
+
+void ControlScript::setValue(string property, void* value)
+ {
+ 
+ 
+     if(property == "scene")
+     {
+         this->scene = (Scene*) value;
+ 
+ 
+         cout << "Scene script success!!! Player Name: " << scene->nodes["player"]->name << endl;
+     }
+     else if(property == "width")
+     {
+         float* floatPtr = (float*) value;
+         this->width = *floatPtr;
+ 
+         cout << "Script Width: " << width << endl;
+     }
+     else if(property == "height")
+     {
+         float* floatPtr = (float*) value;
+         this->height = *floatPtr;
+     }
+     else if(property == "window")
+     {
+         gWindow = (GLFWwindow*) value;
+     }
+ 
+ 
+ }
+ 
+ 
+ void* ControlScript::getValue(string property)
+ {
+     void* value;
+ 
+     if(property == "scene")
+    {
+        value = this->scene;
+    }
+    else if(property == "height")
+    {
+        value = &this->height;
+    }
+    else if(property == "width")
+    {
+        value = &this->width;
+    }
+ 
+     return value;
+ }
+ 
+ 
+ 
+ void ControlScript::keyboardControls()
+ {
+ 
+     bool playerPresent = false;
+ 
+     if(scene->nodes["player"] != NULL && (firstPerson || thirdPerson))
+     {
+         playerPresent = true;
+     }
+ 
+ 
+     const float r = 0.01f;
+ 
+     if (glfwGetKey(gWindow, 'W'))
+     {
+ 
+         if(playerPresent)
+         {
+             scene->nodes["player"]->meshInst->T.translateLocal(glm::vec3(0, 0, -1), scene->camera);
+         }
+         else
+         {
+             scene->camera.translateLocal(glm::vec3(0,0,-1));
+         }
+         scene->camera.refreshTransform((float)width, (float)height);
+ 
+     }
+ 
+     if (glfwGetKey(gWindow, 'S'))
+     {
+         if(playerPresent)
+         {
+             scene->nodes["player"]->meshInst->T.translateLocal(glm::vec3(0, 0, 1), scene->camera);
+         }
+         else
+         {
+             scene->camera.translateLocal(glm::vec3(0,0,1));
+         }
+         scene->camera.refreshTransform((float)width, (float)height);
+ 
+     }
+ 
+     if (glfwGetKey(gWindow, 'D'))
+     {
+         if(playerPresent)
+         {
+             scene->nodes["player"]->meshInst->T.translateLocal(glm::vec3(.2, 0, 0), scene->camera);
+         }
+         else
+         {
+             scene->camera.translateLocal(glm::vec3(.2,0,0));
+         }
+         scene->camera.refreshTransform((float)width, (float)height);
+ 
+     }
+ 
+     if (glfwGetKey(gWindow, 'A'))
+     {
+         if(playerPresent)
+         {
+             scene->nodes["player"]->meshInst->T.translateLocal(glm::vec3(-.2, 0, 0), scene->camera);
+         }
+         else
+         {
+             scene->camera.translateLocal(glm::vec3(-.2,0,0));
+         }
+         scene->camera.refreshTransform((float)width, (float)height);
+ 
+     }
+     if (glfwGetKey(gWindow, GLFW_KEY_DOWN))
+     {
+         if(playerPresent)
+         {
+             scene->nodes["player"]->meshInst->T.rotateLocal(glm::vec3(1,0,0), -.01);
+         }
+         else
+         {
+             scene->camera.rotateLocal(glm::vec3(1, 0, 0) , -.01);
+         }
+         scene->camera.refreshTransform((float)width, (float)height);
+     }
+     if (glfwGetKey(gWindow, GLFW_KEY_UP))
+     {
+        if(playerPresent)
+        {
+            scene->nodes["player"]->meshInst->T.rotateLocal(glm::vec3(1,0,0), .01);
+        }
+        else
+        {
+            scene->camera.rotateLocal(glm::vec3(1, 0, 0), .01);
+        }
+         scene->camera.refreshTransform((float)width, (float)height);
+     }
+ 
+     if (glfwGetKey(gWindow, GLFW_KEY_LEFT))
+     {
+ 
+        if(playerPresent)
+        {
+            scene->nodes["player"]->meshInst->T.rotateGlobal(glm::vec3(0 ,1, 0), r);
+        }
+        else
+        {
+            scene->camera.rotateGlobal(glm::vec3(0,1,0), r);
+        }
+         scene->camera.refreshTransform((float)width, (float)height);
+     }
+     if (glfwGetKey(gWindow, GLFW_KEY_RIGHT))
+     {
+ 
+ 
+         if(playerPresent)
+         {
+             scene->nodes["player"]->meshInst->T.rotateGlobal(glm::vec3(0,1,0), -r);
+         }
+         else
+         {
+             scene->camera.rotateGlobal(glm::vec3(0,1,0), -r);
+         }
+         
+         scene->camera.refreshTransform((float)width, (float)height);
+     }
+     if (glfwGetKey(gWindow, GLFW_KEY_X) == GLFW_PRESS)
+     {
+         //gScene.nextCamera(gWidth, gHeight);
+     }
+ 
+     scene->camera.refreshTransform((float)width, (float)height);
+ }
+
+void ControlScript::firstPersonControls()
+{
+    if(scene->nodes["player"] != NULL)
+    {
+        scene->camera.eye = scene->nodes["player"]->meshInst->T.translation + ( scene->nodes["player"]->meshInst->T.rotation * glm::vec3(0,0,1)) * 1.0f + -0.1f * glm::vec3(0,1,0);
+        scene->camera.center = scene->nodes["player"]->meshInst->T.translation + 0.1f * glm::vec3(0,1,0);
+        scene->camera.refreshTransform(width, height);
+    }
+
+}
+
+void ControlScript::thirdPersonControls()
+{
+    if(scene->nodes["player"] != NULL)
+    {
+        scene->camera.eye = scene->nodes["player"]->meshInst->T.translation + (scene->nodes["player"]->meshInst->T.rotation * glm::vec3(0,0,1)) * 20.0f + 5.0f * glm::vec3(0,1,0);
+        scene->camera.center = scene->nodes["player"]->meshInst->T.translation + 3.0f * glm::vec3(0,1,0);
+        scene->camera.refreshTransform(width, height);
+    }
+    
+}
+
+void ControlScript::runScripts(){
+    
+    if(keyboard)
+    {
+        keyboardControls();
+    }
+    
+    if(thirdPerson)
+    {
+        thirdPersonControls();
+    }
+    
+    if(firstPerson)
+    {
+        firstPersonControls();
+    }
+}
+
+
+void ControlScript::useKeyboard(bool option){
+    
+    this->keyboard = option;
+}
+
+void ControlScript::useFirstPerson(bool option)
+{
+    this->firstPerson = option;
+    
+    if(firstPerson && thirdPerson)
+    {
+        this->thirdPerson = false;
+    }
+}
+
+void ControlScript::useThirdPerson(bool option)
+{
+    this->thirdPerson = option;
+    
+    if(firstPerson && thirdPerson)
+    {
+        this->firstPerson = false;
+    }
+    
+}
+
+
+
+
+//***************************************************************
+//Move Script Functions
+//***************************************************************
+void MoveScript::setValue(string property, void* value)
+{
+    if(property == "node")
+    {
+        this->node = (Node*)value;
+        
+    }
+    else if(property == "translate")
+    {
+        glm::vec3* vecPtr = (glm::vec3*) value;
+        this->transVec = *vecPtr;
+    }
+    else if(property == "scale")
+    {
+        glm::vec3* vecPtr = (glm::vec3*) value;
+        this->scaleVec = *vecPtr;
+    }
+}
+
+void MoveScript::setValue(string property, void* value1, void* value2)
+{
+    if(property == "rotate")
+    {
+        glm::vec3* vecPtr = (glm::vec3*) value1;
+        this->axis = *vecPtr;
+        
+        float* flPtr = (float*) value2;
+        this->angle = *flPtr;
+    }
+}
+
+
+
+void MoveScript::globalRotate()
+{
+    node->meshInst->T.rotateGlobal(axis, angle);
+}
+
+
+void MoveScript::runScripts()
+{
+    if(useGlobalRotate)
+    {
+        globalRotate();
+    }
+    
+}
+
+
+
+

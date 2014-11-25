@@ -5,6 +5,7 @@
 // June 27, 2014
 //-------------------------------------------------------------------------//
 
+
 #include "EngineUtil.h"
 
 //-------------------------------------------------------------------------//
@@ -24,6 +25,10 @@ Scene gScene;
 
 ISoundEngine* engine = NULL;
 ISound* music = NULL;
+ControlScript* control = new ControlScript();
+MoveScript* moveScript = new MoveScript();
+
+void setupScript();
 
 //-------------------------------------------------------------------------//
 // Callback for Keyboard Input
@@ -450,6 +455,9 @@ void update(void)
     {
        cout << "player null" << endl;
     }
+    
+    control->runScripts();
+    moveScript->runScripts();
 	//engine->setListenerPosition(vec3df(cameraPos.x, cameraPos.y, cameraPos.z), vec3df(cameraRot.x, cameraRot.y, cameraRot.z) );
 
 	//gScene.nodes["parent"]->rotateLocal(glm::vec3(0, 1, 0), 0.03, false);
@@ -471,7 +479,7 @@ void render(void)
 //-------------------------------------------------------------------------//
 
 void cameraController(Camera &camera, int type){
-    bool playerPresent = false;
+   /*bool playerPresent = false;
 	if (glfwGetKey(gWindow, GLFW_KEY_1)){
 		gScene.updateCamera();
 		gScene.switchCamera(0);
@@ -607,7 +615,7 @@ void cameraController(Camera &camera, int type){
 	else if (type == MOUSE_CONTROL){
 
 	}
-	camera.refreshTransform(gWidth, gHeight);
+	camera.refreshTransform(gWidth, gHeight);*/
 }
 
 //-------------------------------------------------------------------------//
@@ -633,6 +641,8 @@ int main(int numArgs, char **args)
     
 	// init current camera
 	gScene.switchCamera(0);
+    
+    setupScript();
 
 	/*for (auto& x : gScene.nodes){
 		cout << "nodes created: ";
@@ -674,5 +684,34 @@ int main(int numArgs, char **args)
 }
 
 //-------------------------------------------------------------------------//
+
+
+void setupScript()
+{
+    
+    control->setValue("width", &gWidth);
+    control->setValue("height",&gHeight);
+    control->setValue("window", gWindow);
+    control->setValue("scene", &gScene);
+    control->useThirdPerson(true);
+    control->useFirstPerson(false);
+    control->useKeyboard(true);
+    
+    if(gScene.nodes["rotObj"] != NULL)
+    {
+        float angle = 0.01;
+        glm::vec3 axis = glm::vec3(0,1,0);
+        moveScript->setValue("node", gScene.nodes["rotObj"]);
+        moveScript->setValue("rotate", &axis, &angle);
+        moveScript->useGlobalRotate = true;
+
+    }
+}
+
+
+
+
+
+
 
 

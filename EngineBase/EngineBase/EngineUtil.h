@@ -647,15 +647,6 @@ public:
 
         renderNodes();
         
-        if(meshInstances["floor"] != NULL)
-        {
-            meshInstances["floor"]->draw(camera);
-        }
-        if(player != NULL)
-        {
-            player->draw(camera);
-            renderNodes(player->children);
-        }
 		//bboards[0]->draw(camera);
 	}
     
@@ -669,14 +660,11 @@ public:
                 x.second->draw(camera);
                 renderNodes(x.second->children);
             }
-           
         }
-        
     }
     
     void renderNodes(vector<Node*> nodes)
     {
-        
         for (int i = 0; i < nodes.size(); i++){
             
             nodes[i]->draw(camera);
@@ -685,8 +673,82 @@ public:
             {
                 renderNodes(nodes[i]->children);
             }
-            
         }
-        
     }
+    
 };
+
+
+//control script class
+
+class ControlScript //: public Script
+{
+public:
+    //data members
+    Scene* scene;
+    GLFWwindow* gWindow;
+    float width;
+    float height;
+    
+    //boolean member variables to determine which scripts to run
+    bool keyboard;
+    bool thirdPerson;
+    bool firstPerson;
+    
+    //setters for bools
+    void useKeyboard(bool option);
+    void useThirdPerson(bool option);
+    void useFirstPerson(bool option);
+    
+    void setValue(string property, void* value);
+    void* getValue(string property);       //returns a void ptr
+    
+    //scripts
+    void keyboardControls();
+    void firstPersonControls();
+    void thirdPersonControls();
+    
+    //function to actually run scripts
+    void runScripts();
+    
+};
+
+
+class MoveScript
+{
+public:
+    Node* node;
+    glm::vec3 transVec;
+    glm::vec3 scaleVec;
+    glm::vec3 axis;
+    float angle;
+    
+    void setValue(string property, void* value);
+    void setValue(string property, void* value1, void* value2);
+    void* getValue(string property);
+    
+    //scripts
+    void globalRotate();
+    
+    //bools for what script to run
+    bool useGlobalRotate;
+    bool useLocalRotate;
+    bool useLocalTrans;
+    bool useGlobalTrans;
+    
+    
+    //function to runScripts
+    void runScripts();
+    
+    
+    
+    
+
+};
+
+
+
+
+
+
+
