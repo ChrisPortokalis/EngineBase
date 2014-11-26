@@ -254,6 +254,29 @@ public:
         cout << endl;
     }
     
+    
+    void translateLocal(glm::vec3 moveVec)
+    {
+        glm::mat4x4 rot = glm::toMat4(rotation);
+        glm::vec4 xAxis = glm::vec4(1,0,0,0);
+        glm::vec4 yAxis = glm::vec4(0,1,0,0);
+        glm::vec4 zAxis = glm::vec4(0,0,1,0);
+        
+        glm::vec4 locX = rot * xAxis;
+        glm::vec4 locY = rot * yAxis;
+        glm::vec4 locZ = rot * zAxis;
+        
+        locX *= moveVec.x;
+        locY *= moveVec.y;
+        locZ *= moveVec.z;
+        
+        translation += glm::vec3(locX.x, locX.y, locX.z);
+        translation += glm::vec3(locY.x, locY.y, locY.z);
+        translation += glm::vec3(locZ.x, locZ.y, locZ.z);
+        
+        cout << endl;
+    }
+    
     void rotateGlobal(glm::vec3 axis, float angle)
     {
         glm::mat4x4 R = glm::axisAngleMatrix(axis,angle);
@@ -655,6 +678,7 @@ public:
 
         for (auto& x : nodes){
             
+            //cout << "Node Name" << x.second->name << endl;
             if(x.second->parent == NULL)
             {
                 x.second->draw(camera);
@@ -718,32 +742,61 @@ class MoveScript
 {
 public:
     Node* node;
+    Node* playerNode;
     glm::vec3 transVec;
     glm::vec3 scaleVec;
     glm::vec3 axis;
+    glm::vec3 targetTrans;
+
+    
+    //max translate
+    float maxTransX;
+    float maxTransY;
+    float maxTransZ;
+    
+    //min translate
+    float minTransX;
+    float minTransY;
+    float minTransZ;
     float angle;
+    
+    //follow floats for followPlayer script
+    float followSpeed;
+    float followDist;
+    
+    
+    //utils
+    Camera* camera;
     
     void setValue(string property, void* value);
     void setValue(string property, void* value1, void* value2);
+    void setValue(string property1, string property2, void* value1);
     void* getValue(string property);
     
     //scripts
     void globalRotate();
+    void localRotate();
+    void localTrans();
+    void globalTrans();
+    void setScale();
+    void localTransLimited();  //moves an object to a maximum position then moves back to original position
+    void followPlayer();
+    void facePlayer();
     
     //bools for what script to run
     bool useGlobalRotate;
     bool useLocalRotate;
     bool useLocalTrans;
     bool useGlobalTrans;
+    bool useSetScale;
+    bool useLimitedTrans;
+    bool useFollowPlayer;
+    bool useFacePlayer;
+    bool minSet;
     
     
     //function to runScripts
     void runScripts();
-    
-    
-    
-    
-
 };
 
 

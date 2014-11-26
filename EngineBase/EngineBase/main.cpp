@@ -27,6 +27,7 @@ ISoundEngine* engine = NULL;
 ISound* music = NULL;
 ControlScript* control = new ControlScript();
 MoveScript* moveScript = new MoveScript();
+MoveScript* moveFollow = new MoveScript();
 
 void setupScript();
 
@@ -281,8 +282,7 @@ void loadLight(FILE *F, Scene *scene)
 void loadNode(FILE *F, Scene *scene){
 	string token;
 	Node *node = new Node();
-    bool isPlayer = false;
-    bool isChild = false;
+
 
 	while (getToken(F, token, ONE_TOKENS)) {
 		if (token == "}") break;
@@ -451,13 +451,11 @@ void update(void)
     gScene.updateFirstPerson( gWidth, gHeight);
     gScene.updateListenerPos(engine);
     
-    if(gScene.player == NULL)
-    {
-       cout << "player null" << endl;
-    }
-    
+
     control->runScripts();
     moveScript->runScripts();
+    moveFollow->runScripts();
+    gScene.camera.refreshTransform(gWidth, gHeight);
 	//engine->setListenerPosition(vec3df(cameraPos.x, cameraPos.y, cameraPos.z), vec3df(cameraRot.x, cameraRot.y, cameraRot.z) );
 
 	//gScene.nodes["parent"]->rotateLocal(glm::vec3(0, 1, 0), 0.03, false);
@@ -700,14 +698,39 @@ void setupScript()
     if(gScene.nodes["rotObj"] != NULL)
     {
         float angle = 0.01;
+        float max = 30;
         glm::vec3 axis = glm::vec3(0,1,0);
+        glm::vec3 scale = glm::vec3(5,5,5);
+        glm::vec3 translate = glm::vec3(0,0,-0.1);
         moveScript->setValue("node", gScene.nodes["rotObj"]);
         moveScript->setValue("rotate", &axis, &angle);
+        //moveScript->setValue("scale", &scale);
+        moveScript->setValue("maxTrans", "z", &max);
+        moveScript->setValue("translate", &translate);
+       // moveScript->setValue("camera", &gScene.camera);
         moveScript->useGlobalRotate = true;
+        //moveScript->useSetScale = true;
+        moveScript->useLimitedTrans = true;
+        //moveScript->useLocalTrans=true;
 
     }
-}
+    
+    if(gScene.nodes["follow"] != NULL)
+    {
 
+        float follow = 0.8;
+        float follows = 0.1;
+        
+        moveFollow->setValue("node", gScene.nodes["follow"]);
+        moveFollow->setValue("player", gScene.nodes["player"]);
+        moveFollow->setValue("followDist", &follow);
+        moveFollow->setValue("followSpeed", &follows);
+        moveFollow->useFollowPlayer = true;
+        moveFollow->useFacePlayer = true;
+        
+        
+    }
+}
 
 
 

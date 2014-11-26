@@ -1172,6 +1172,26 @@ void MoveScript::setValue(string property, void* value)
         glm::vec3* vecPtr = (glm::vec3*) value;
         this->scaleVec = *vecPtr;
     }
+    else if(property == "player")
+    {
+        this->playerNode = (Node*)value;
+    }
+    else if(property == "minTrans")
+    {
+        float* min = (float*) value;
+        this->minTransX = *min;
+        minTransX = minTransY = minTransZ;
+    }
+    else if(property == "followDist")
+    {
+        float* follow = (float*) value;
+        this->followDist = *follow;
+    }
+    else if(property == "followSpeed")
+    {
+        float* follow = (float*) value;
+        this->followSpeed = *follow;
+    }
 }
 
 void MoveScript::setValue(string property, void* value1, void* value2)
@@ -1188,20 +1208,218 @@ void MoveScript::setValue(string property, void* value1, void* value2)
 
 
 
+void MoveScript::setValue(string property1, string property2, void* value)
+{
+    if(property1 == "maxTrans")
+    {
+        float* max = (float*) value;
+        
+        
+        
+        if(property2 == "X" || property2 == "x")
+        {
+            this->maxTransX = *max;
+        }
+        else if(property2 == "Y" || property2 == "y")
+        {
+            this->maxTransY = *max;
+        }
+        else if(property2 =="Z" || property2 == "z")
+        {
+            this->maxTransZ = *max;
+        }
+    }
+
+}
+
+
+
 void MoveScript::globalRotate()
 {
     node->meshInst->T.rotateGlobal(axis, angle);
 }
 
+void MoveScript::localRotate()
+{
+    node->meshInst->T.scale = scaleVec;
+}
+
+void MoveScript::localTrans()
+{
+    node->meshInst->T.translateLocal(transVec);
+}
+
+void MoveScript::globalTrans()
+{
+    node->meshInst->T.translateGlobal(transVec);
+}
+void MoveScript::setScale()
+{
+    node->meshInst->T.scale = scaleVec;
+}
+
+void MoveScript::localTransLimited()
+{
+    if(!minSet)
+    {
+        this->minTransX = node->meshInst->T.translation.x;
+        this->minTransY = node->meshInst->T.translation.y;
+        this->minTransZ = node->meshInst->T.translation.z;
+        minSet = true;
+        //cout << "reached it" << endl;
+    }
+    
+    globalTrans();
+    
+    if(this->minTransZ > node->meshInst->T.translation.z)
+    {
+        transVec.z = -transVec.z;
+    }
+    else if(this->maxTransZ < node->meshInst->T.translation.z)
+    {
+        transVec.z = -transVec.z;
+    }
+    
+    if(this->minTransX > node->meshInst->T.translation.x)
+    {
+        transVec.x = -transVec.x;
+    }
+    else if(this->maxTransX < node->meshInst->T.translation.x)
+    {
+        transVec.x = -transVec.x;
+    }
+    
+    if(this->minTransY > node->meshInst->T.translation.y)
+    {
+        transVec.y = -transVec.y;
+    }
+    else if(this->maxTransY < node->meshInst->T.translation.y)
+    {
+        transVec.y = -transVec.y;
+    }
+    
+    node->meshInst->T.refreshTransform();
+    //camera->refreshTransform(600, 600);
+}
+
+void MoveScript::followPlayer()
+{
+    //cout << "Player y = " << playerNode->meshInst->T.translation.z << endl;
+    //cout << "Node y = " << node->meshInst->T.translation.z << endl;
+
+    
+    float zDist = node->meshInst->T.translation.z - playerNode->meshInst->T.translation.z;
+    float yDist = node->meshInst->T.translation.y - playerNode->meshInst->T.translation.y;
+    float xDist = node->meshInst->T.translation.x - playerNode->meshInst->T.translation.x;
+   // cout << "yDist = " << yDist << " X Dist = " << xDist << endl;
+
+    if(abs(zDist) <= followDist)
+    {
+        //return;
+    }
+    else
+    {
+        if(zDist < 0)
+        {
+            node->meshInst->T.translation.z += followSpeed;
+        }
+        else
+        {
+            node->meshInst->T.translation.z -= followSpeed;
+        }
+    }
+    
+    if(abs(yDist) <= followDist)
+    {
+       // cout << "return y" << endl;
+        //eturn;
+    }
+    else
+    {
+        if(yDist < 0)
+        {
+            node->meshInst->T.translation.y += followSpeed;
+        }
+        else
+        {
+            node->meshInst->T.translation.y -= followSpeed;
+        }
+        
+       // cout << "player changed dir node z = " << node->meshInst->T.translation.z << endl;
+    }
+ 
+    if(abs(xDist) <= followDist)
+    {
+        //cout << "return x" << endl;
+        //return;
+        
+    }
+    else
+    {
+        if(xDist < 0)
+        {
+            node->meshInst->T.translation.x += followSpeed;
+        }
+        else
+        {
+            node->meshInst->T.translation.x -= followSpeed;
+        }
+        
+    }
+    
+}
+
+void MoveScript::facePlayer()
+{
+    glm::vec3 objToCamProj;
+    float angleY, angleX;
+    
+    objToCamProj = glm::vec3(playerNode->meshInst->T.translation);
+    objToCamProj = glm::normalize(objToCamProj);
+    angleY = -atan2(objToCamProj.x, objToCamProj.z);
+    angleX = asin(objToCamProj.y);
+    node->meshInst->T.rotation = glm::quat(sin(angleY / 2), glm::vec3(0, cos(angleY / 2), 0));
+    node->meshInst->T.rotation *= glm::quat(cos(angleX / 2), glm::vec3(sin(angleX / 2), 0, 0));
+}
 
 void MoveScript::runScripts()
 {
+    if(useFacePlayer)
+    {
+        facePlayer();
+    }
     if(useGlobalRotate)
     {
         globalRotate();
     }
-    
+    if(useLocalRotate)
+    {
+        localRotate();
+    }
+    if(useLocalTrans)
+    {
+        localTrans();
+    }
+    if(useGlobalTrans)
+    {
+        globalTrans();
+    }
+    if(useSetScale)
+    {
+        setScale();
+    }
+    if(useLimitedTrans)
+    {
+        localTransLimited();
+    }
+    if(useFollowPlayer)
+    {
+        followPlayer();
+    }
+
 }
+
+
 
 
 
