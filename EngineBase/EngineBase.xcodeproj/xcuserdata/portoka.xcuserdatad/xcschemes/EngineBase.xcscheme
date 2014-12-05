@@ -64,7 +64,15 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = ""
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "monkeyScene.scene"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "sprint2.scene"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
