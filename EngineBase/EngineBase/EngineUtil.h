@@ -42,6 +42,9 @@ using namespace irrklang;
 //forward declarations
 class Camera;
 class Node;
+class MoveScript;
+class ControlScript;
+class SpawnScript;
 
 //-------------------------------------------------------------------------//
 // MISCELLANEOUS
@@ -501,7 +504,8 @@ public:
 	TriMeshInstance *meshInst;
 
     Node(){ nodeType = NULL; parent = NULL;}
-	Node(TriMeshInstance *_meshInst){ meshInst = _meshInst; nodeType = 0; }
+
+    Node(TriMeshInstance *_meshInst){ meshInst = new TriMeshInstance(*_meshInst); nodeType = 0; }
 
 	void addChildren(Node *child){ children.push_back(child); }
     void draw(Camera &camera);
@@ -544,6 +548,9 @@ public:
 	map<string, RGBAImage*> textures;
 	map<string, Node*> nodes;
 	map<string, TriMeshInstance*> meshInstances;
+    map<string,MoveScript*> moveScripts;
+    vector<ControlScript*> controlScripts;
+    vector<SpawnScript*> spawnScripts;
     Node* player;
     TriMeshInstance* firstPerson;
     TriMeshInstance* thirdPerson;
@@ -554,6 +561,11 @@ public:
 	int currCam = 0;
 	vector<Billboard*> bboards;
 	vector<Camera> cameras;
+    
+    //member functions
+    void runScripts();
+    void drawSpawns();
+    
     
     void updateFirstPerson(int width, int height)
     {
@@ -669,8 +681,12 @@ public:
 		updateLights();
 
         renderNodes();
+        renderBBoards();
+        drawSpawns();
         
-		//bboards[0]->draw(camera);
+        
+        //swmeshInstances["monkey1"]->draw(camera);
+        //cout << "";
 	}
     
     void renderNodes(void)
@@ -678,9 +694,10 @@ public:
 
         for (auto& x : nodes){
             
-            //cout << "Node Name" << x.second->name << endl;
-            if(x.second->parent == NULL)
+            
+            if(x.second->parent == NULL && x.second->name.find("baseNode") == string::npos)
             {
+                //cout << "Node Name" << x.second->name << endl;
                 x.second->draw(camera);
                 renderNodes(x.second->children);
             }
@@ -700,6 +717,15 @@ public:
         }
     }
     
+    void renderBBoards()
+    {
+        for(int i = 0; i < bboards.size(); i++)
+        {
+            bboards[i]->draw(camera);
+        }
+    }
+
+    
 };
 
 
@@ -713,6 +739,13 @@ public:
     GLFWwindow* gWindow;
     float width;
     float height;
+    
+    ControlScript()
+    {
+        keyboard = false;
+        thirdPerson = false;
+        firstPerson = false;
+    }
     
     //boolean member variables to determine which scripts to run
     bool keyboard;
@@ -741,8 +774,23 @@ public:
 class MoveScript
 {
 public:
+    
+
+    MoveScript()
+    {
+   
+        useFaceTarget = false;
+        useFollowPlayer = false;
+        useGlobalRotate = false;
+        useGlobalTrans = false;
+        useLocalRotate = false;
+        useLocalTrans = false;
+        useSetScale = false;
+    }
+    
     Node* node;
-    Node* playerNode;
+    Node* targetNode;
+    string name;
     glm::vec3 transVec;
     glm::vec3 scaleVec;
     glm::vec3 axis;
@@ -781,7 +829,7 @@ public:
     void setScale();
     void localTransLimited();  //moves an object to a maximum position then moves back to original position
     void followPlayer();
-    void facePlayer();
+    void faceTarget();
     
     //bools for what script to run
     bool useGlobalRotate;
@@ -791,7 +839,7 @@ public:
     bool useSetScale;
     bool useLimitedTrans;
     bool useFollowPlayer;
-    bool useFacePlayer;
+    bool useFaceTarget;
     bool minSet;
     
     
@@ -799,8 +847,42 @@ public:
     void runScripts();
 };
 
+class SpawnScript
+{
+    
+public:
+    
+    bool useSpawn;
+    bool useMove;
+    int spawnCount;
+    Node* node;
+    Scene* scene;
+    string nameOfMoveScript;
+    static int spawnNum;
+    int numOfSpawn;
+    string name;
+    Camera* camera;
+    glm::vec3 spawnloc;
+    MoveScript* moveScript;
+    
+    
+    SpawnScript()
+    {
+        useSpawn = false;
+        useMove = false;
+        name = "spawn";
+        numOfSpawn = spawnNum++;
+    }
+    
+    
+    void spawnNode();
+    void attachMoveScript();
+    void runScripts();
+    
+};
 
 
+//
 
 
 
