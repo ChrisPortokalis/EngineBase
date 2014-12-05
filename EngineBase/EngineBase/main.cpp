@@ -820,6 +820,21 @@ void setupScript()
         //spawn->spawnloc += glm::vec3(1,0,0);
         }
     }
+
+    
+    for(int i = 0; i < 4; i++)
+    {
+        spawn = new SpawnScript();
+        Node* move = gScene.nodes["spawn"];
+        spawn->node = new Node;
+        *spawn->node = *move;
+        spawn->camera = &gScene.camera;
+        spawn->useSpawn = true;
+        spawn->spawnloc = glm::vec3(1,1,0);
+        gScene.spawnScripts.push_back(spawn);
+        spawn->spawnloc += glm::vec3(1,0,0);
+    }
+    
 }
 
 
