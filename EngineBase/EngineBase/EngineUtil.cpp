@@ -841,10 +841,7 @@ void Material::bindNodeMaterial(Node* node, Camera &camera)
     if(loc != 0) glUniform4fv(loc, 1, glm::value_ptr(cameraNormal));
     
     
-    //printVec(color);
-    
-    
-    
+    //printVec(colors[0]);
     
     // MATERIAL TEXTURES
     for (int i = 0; i < (int) textures.size(); i++) {
@@ -1172,9 +1169,9 @@ void MoveScript::setValue(string property, void* value)
         glm::vec3* vecPtr = (glm::vec3*) value;
         this->scaleVec = *vecPtr;
     }
-    else if(property == "player")
+    else if(property == "target")
     {
-        this->playerNode = (Node*)value;
+        this->targetNode = (Node*)value;
     }
     else if(property == "minTrans")
     {
@@ -1308,9 +1305,9 @@ void MoveScript::followPlayer()
     //cout << "Node y = " << node->meshInst->T.translation.z << endl;
 
     
-    float zDist = node->meshInst->T.translation.z - playerNode->meshInst->T.translation.z;
-    float yDist = node->meshInst->T.translation.y - playerNode->meshInst->T.translation.y;
-    float xDist = node->meshInst->T.translation.x - playerNode->meshInst->T.translation.x;
+    float zDist = node->meshInst->T.translation.z - targetNode->meshInst->T.translation.z;
+    float yDist = node->meshInst->T.translation.y - targetNode->meshInst->T.translation.y;
+    float xDist = node->meshInst->T.translation.x - targetNode->meshInst->T.translation.x;
    // cout << "yDist = " << yDist << " X Dist = " << xDist << endl;
 
     if(abs(zDist) <= followDist)
@@ -1369,12 +1366,12 @@ void MoveScript::followPlayer()
     
 }
 
-void MoveScript::facePlayer()
+void MoveScript::faceTarget()
 {
     glm::vec3 objToCamProj;
     float angleY, angleX;
     
-    objToCamProj = glm::vec3(playerNode->meshInst->T.translation);
+    objToCamProj = glm::vec3(targetNode->meshInst->T.translation);
     objToCamProj = glm::normalize(objToCamProj);
     angleY = -atan2(objToCamProj.x, objToCamProj.z);
     angleX = asin(objToCamProj.y);
@@ -1384,9 +1381,9 @@ void MoveScript::facePlayer()
 
 void MoveScript::runScripts()
 {
-    if(useFacePlayer)
+    if(useFaceTarget)
     {
-        facePlayer();
+        faceTarget();
     }
     if(useGlobalRotate)
     {
@@ -1418,6 +1415,65 @@ void MoveScript::runScripts()
     }
 
 }
+
+//*****************
+//Scene Functions
+//****************
+
+
+void Scene::runScripts()
+{
+    for(int i = 0; i < controlScripts.size(); i++)
+    {
+        controlScripts[i]->runScripts();
+    }
+    
+    for(auto& x : moveScripts)
+    {
+        
+        x.second->runScripts();
+    }
+    
+    for(int i = 0; i < spawnScripts.size(); i++)
+    {
+        spawnScripts[i]->runScripts();
+    }
+    
+    
+   
+}
+
+void Scene::drawSpawns()
+{
+    for(int i = 0; i <spawnScripts.size(); i++)
+    {
+        cout << "Spawn Y: " << spawnScripts[i]->node->meshInst->T.translation.x << endl;
+        spawnScripts[i]->spawnNode();
+    }
+    
+}
+
+
+//*****************
+//SpawnScript Functions
+//****************
+
+
+void SpawnScript::spawnNode()
+{
+    node->meshInst->T.translation = spawnloc;
+    node->meshInst->draw(*camera);
+    //node->meshInst->T.refreshTransform();
+}
+
+void SpawnScript::runScripts()
+{
+    if(this->useSpawn)
+    {
+        //spawnNode();
+    }
+}
+
 
 
 

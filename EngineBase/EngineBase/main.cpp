@@ -7,7 +7,6 @@
 
 
 #include "EngineUtil.h"
-
 //-------------------------------------------------------------------------//
 // Global State.  Eventually, this should include the global 
 // state of the system, including multiple scenes, objects, shaders, 
@@ -28,6 +27,10 @@ ISound* music = NULL;
 ControlScript* control = new ControlScript();
 MoveScript* moveScript = new MoveScript();
 MoveScript* moveFollow = new MoveScript();
+MoveScript* moveFollow2 = new MoveScript();
+MoveScript* moveFollow3 = new MoveScript();
+SpawnScript* spawn = new SpawnScript();
+
 
 void setupScript();
 
@@ -290,8 +293,14 @@ void loadNode(FILE *F, Scene *scene){
 
 			string name;
 			getToken(F, name, ONE_TOKENS);
-			//node = new Node(scene->getInstance(name));
-            node->meshInst = gScene.meshInstances[name];
+            //node->meshInst = gScene.meshInstances[name];
+           // node = new Node(gScene.meshInstances[name]);
+            TriMeshInstance* meshInst = gScene.meshInstances[name];
+            node->meshInst = new TriMeshInstance;
+            *node->meshInst = *meshInst;
+            
+            
+            cout <<"" << endl;
 		}
 		else if (token == "name"){
 			string name;
@@ -396,6 +405,202 @@ void loadBillboard(FILE *F, Scene *scene){
 	scene->addBillboard(board);
 }
 
+void loadControlScript(FILE* F, Scene* scene)
+{
+    string token;
+    ControlScript* controlScript = new ControlScript;
+    controlScript->scene = scene;
+    controlScript->height = gWidth;
+    controlScript->width = gHeight;
+    controlScript->gWindow = gWindow;
+    controlScript->keyboard = true;
+    
+    while(getToken(F,token,ONE_TOKENS))
+    {
+        if(token == "}")
+        {
+            break;
+        }
+        
+        if(token == "thirdPerson")
+        {
+            controlScript->useThirdPerson(true);
+        }
+            
+        else if(token == "firstPerson")
+        {
+            controlScript->useFirstPerson(true);
+        }
+
+    }
+
+    scene->controlScripts.push_back(controlScript);
+    
+}
+
+void loadMoveScript(FILE* F, Scene* scene)
+{
+    string token;
+    MoveScript* moveScript = new MoveScript();
+    moveScript->camera = &scene->camera;
+    string name;
+
+    
+    while(getToken(F, token, ONE_TOKENS))
+    {
+        
+        if(token == "}")
+        {
+            break;
+        }
+        
+        if(token == "node")
+        {
+            string nodeName;
+            getToken(F, nodeName, ONE_TOKENS);
+            
+            moveScript->node = scene->nodes[nodeName];
+            
+        }
+        else if(token == "name")
+        {
+            getToken(F, name, ONE_TOKENS);
+            moveScript->name = name;
+            cout << "mscript name = " << name << endl;
+        }
+        else if(token == "target")
+        {
+            string nodeName;
+            getToken(F, nodeName, ONE_TOKENS);
+            
+            moveScript->targetNode = scene->nodes[nodeName];
+        }
+        else if(token == "followSpeed")
+        {
+            float speed;
+            getFloats(F, &speed, 1);
+            moveScript->followSpeed = speed;
+        }
+        else if(token == "followDistance")
+        {
+            float distance;
+            getFloats(F, &distance, 1);
+            moveScript->followDist = distance;
+        }
+        else if(token == "xLimit")
+        {
+            float max;
+            getFloats(F, &max, 1);
+            moveScript->maxTransX = max;
+        }
+        else if(token == "yLimit")
+        {
+            float max;
+            getFloats(F, &max, 1);
+            moveScript->maxTransY = max;
+        }
+        else if(token == "zLimit")
+        {
+            float max;
+            getFloats(F, &max, 1);
+            moveScript->maxTransZ = max;
+        }
+        else if(token == "minX")
+        {
+            float min;
+            getFloats(F, &min, 1);
+            moveScript->minTransX = min;
+            
+        }
+        else if(token == "minY")
+        {
+            float min;
+            getFloats(F, &min, 1);
+            moveScript->minTransY = min;
+        }
+        else if(token == "minZ")
+        {
+            float min;
+            getFloats(F, &min, 1);
+            moveScript->minTransZ = min;
+        }
+        else if(token == "angle")
+        {
+            float angle;
+            getFloats(F, &angle, 1);
+            moveScript->angle = angle;
+            
+        }
+        else if(token == "translate")
+        {
+            glm::vec3 trans;
+            getFloats(F, &trans[0], 3);
+            moveScript->node->meshInst->T.translation = trans;
+            
+        }
+        else if(token == "transVec")
+        {
+            glm::vec3 transVec;
+            getFloats(F, &transVec[0], 3);
+            moveScript->transVec = transVec;
+        }
+        else if(token == "scale")
+        {
+            glm::vec3 scaleVec;
+            getFloats(F, &scaleVec[0], 3);
+            moveScript->scaleVec = scaleVec;
+        }
+        else if(token == "axis")
+        {
+            glm::vec3 axis;
+            getFloats(F, &axis[0], 3);
+            moveScript->axis = axis;
+            
+        }
+        else if(token == "targetTrans")
+        {
+            glm::vec3 targetTrans;
+            getFloats(F, &targetTrans[0],3);
+            moveScript->targetTrans = targetTrans;
+        }
+        else if(token == "globalRotate")
+        {
+            moveScript->useGlobalRotate = true;
+        }
+        else if(token == "localRotate")
+        {
+            moveScript->useLocalRotate = true;
+        }
+        else if(token == "localTrans")
+        {
+            moveScript->useLocalTrans = true;
+        }
+        else if(token == "globalTrans")
+        {
+            moveScript->useGlobalTrans = true;
+        }
+        else if(token == "setScale")
+        {
+            moveScript->useSetScale = true;
+        }
+        else if(token == "limitedTrans")
+        {
+            moveScript->useLimitedTrans = true;
+        }
+        else if(token == "followPlayer")
+        {
+            moveScript->useFollowPlayer = true;
+        }
+        else if(token == "faceTarget")
+        {
+            moveScript->useFaceTarget = true;
+        }
+    }
+    
+    scene->moveScripts[name] = moveScript;
+    
+}
+
 void loadScene(const char *sceneFile, Scene *scene)
 {
 	string sceneFileName = sceneFile;
@@ -435,8 +640,24 @@ void loadScene(const char *sceneFile, Scene *scene)
 		else if (token == "billboard"){
 			loadBillboard(F, scene);
 		}
+        else if(token == "controlScript")
+        {
+            loadControlScript(F, scene);
+        }
+        else if(token == "moveScript")
+        {
+            loadMoveScript(F,scene);
+        }
+        else if(token == "spawnScript")
+        {
+            
+        }
+        
 	}
 }
+
+
+
 
 //-------------------------------------------------------------------------//
 // Update
@@ -451,10 +672,13 @@ void update(void)
     gScene.updateFirstPerson( gWidth, gHeight);
     gScene.updateListenerPos(engine);
     
-
-    control->runScripts();
+    gScene.runScripts();
     moveScript->runScripts();
-    moveFollow->runScripts();
+    //moveFollow->runScripts();
+    //moveFollow2->runScripts();
+    //moveFollow3->runScripts();
+    //spawn->runScripts();
+    
     gScene.camera.refreshTransform(gWidth, gHeight);
 	//engine->setListenerPosition(vec3df(cameraPos.x, cameraPos.y, cameraPos.z), vec3df(cameraRot.x, cameraRot.y, cameraRot.z) );
 
@@ -477,143 +701,7 @@ void render(void)
 //-------------------------------------------------------------------------//
 
 void cameraController(Camera &camera, int type){
-   /*bool playerPresent = false;
-	if (glfwGetKey(gWindow, GLFW_KEY_1)){
-		gScene.updateCamera();
-		gScene.switchCamera(0);
-	}
-	if (glfwGetKey(gWindow, GLFW_KEY_2)){
-		gScene.updateCamera();
-		gScene.switchCamera(1);
-	}
-	if (glfwGetKey(gWindow, GLFW_KEY_3)){
-		gScene.updateCamera();
-		gScene.switchCamera(2);
-	}
-    
-    if(gScene.nodes["player"] != NULL)
-    {
-        playerPresent = true;
-    }
 
-	if (type == KEYBOARD_CONTROL){
-       const float t = 0.025f;
-       const float r = 0.01f;
-        const float conT = 1.0f;
-        
-        if (glfwGetKey(gWindow, 'W'))
-        {
-            
-            if(playerPresent)
-            {
-                gScene.nodes["player"]->meshInst->T.translateLocal(glm::vec3(0, 0, -1), gScene.camera);
-            }
-            else
-            {
-                const glm::vec3 moveVec = glm::vec3(0,0,-1);
-                camera.translateLocal(glm::vec3(0,0,-1));
-            }
-            
-        }
-        
-        if (glfwGetKey(gWindow, 'S'))
-        {
-            if(playerPresent)
-            {
-                gScene.nodes["player"]->meshInst->T.translateLocal(glm::vec3(0, 0, 1), gScene.camera);
-            }
-            else
-            {
-               camera.translateLocal(glm::vec3(0,0,1));
-            }
-            
-        }
-        
-        if (glfwGetKey(gWindow, 'D'))
-        {
-            if(playerPresent)
-            {
-                gScene.nodes["player"]->meshInst->T.translateLocal(glm::vec3(.2, 0, 0), gScene.camera);
-            }
-            else
-            {
-                camera.translateLocal(glm::vec3(.2,0,0));
-            }
-            
-        }
-        
-        if (glfwGetKey(gWindow, 'A'))
-        {
-            if(playerPresent)
-            {
-                gScene.nodes["player"]->meshInst->T.translateLocal(glm::vec3(-.2, 0, 0), camera);
-            }
-            else
-            {
-                camera.translateLocal(glm::vec3(-.2,0,0));
-            }
-            
-        }
-        if (glfwGetKey(gWindow, GLFW_KEY_DOWN))
-        {
-            if(playerPresent)
-            {
-                gScene.nodes["player"]->meshInst->T.rotateLocal(glm::vec3(1,0,0), -.01);
-            }
-            else
-            {
-                camera.rotateLocal(glm::vec3(1, 0, 0) , -.01);
-            }
-        }
-        if (glfwGetKey(gWindow, GLFW_KEY_UP))
-        {
-            if(playerPresent)
-            {
-                gScene.nodes["player"]->meshInst->T.rotateLocal(glm::vec3(1,0,0), .01);
-            }
-            else
-            {
-                camera.rotateLocal(glm::vec3(1, 0, 0), .01);
-            }
-        }
-        
-        if (glfwGetKey(gWindow, GLFW_KEY_LEFT))
-        {
-            
-            if(playerPresent)
-            {
-                gScene.nodes["player"]->meshInst->T.rotateGlobal(glm::vec3(0 ,1, 0), r);
-            }
-            else
-            {
-                camera.rotateGlobal(glm::vec3(0,1,0), r);
-            }
-        }
-        if (glfwGetKey(gWindow, GLFW_KEY_RIGHT))
-        {
-            
-            
-            if(playerPresent)
-            {
-                gScene.nodes["player"]->meshInst->T.rotateGlobal(glm::vec3(0,1,0), -r);
-            }
-            else
-            {
-                camera.rotateGlobal(glm::vec3(0,1,0), -r);
-            }
-        }
-        if (glfwGetKey(gWindow, GLFW_KEY_X) == GLFW_PRESS)
-        {
-            //gScene.nextCamera(gWidth, gHeight);
-        }
-        
-        gScene.camera.refreshTransform((float)gWidth, (float)gHeight);
-	}
-
-	else if (type == MOUSE_CONTROL){
-
-	}
-	camera.refreshTransform(gWidth, gHeight);*/
 }
 
 //-------------------------------------------------------------------------//
@@ -687,49 +775,55 @@ int main(int numArgs, char **args)
 void setupScript()
 {
     
-    control->setValue("width", &gWidth);
-    control->setValue("height",&gHeight);
-    control->setValue("window", gWindow);
-    control->setValue("scene", &gScene);
-    control->useThirdPerson(true);
-    control->useFirstPerson(false);
-    control->useKeyboard(true);
-    
-    if(gScene.nodes["rotObj"] != NULL)
-    {
-        float angle = 0.01;
-        float max = 30;
-        glm::vec3 axis = glm::vec3(0,1,0);
-        glm::vec3 scale = glm::vec3(5,5,5);
-        glm::vec3 translate = glm::vec3(0,0,-0.1);
-        moveScript->setValue("node", gScene.nodes["rotObj"]);
-        moveScript->setValue("rotate", &axis, &angle);
-        //moveScript->setValue("scale", &scale);
-        moveScript->setValue("maxTrans", "z", &max);
-        moveScript->setValue("translate", &translate);
-       // moveScript->setValue("camera", &gScene.camera);
-        moveScript->useGlobalRotate = true;
-        //moveScript->useSetScale = true;
-        moveScript->useLimitedTrans = true;
-        //moveScript->useLocalTrans=true;
 
-    }
-    
     if(gScene.nodes["follow"] != NULL)
     {
 
-        float follow = 0.8;
-        float follows = 0.1;
         
-        moveFollow->setValue("node", gScene.nodes["follow"]);
-        moveFollow->setValue("player", gScene.nodes["player"]);
+        float follows = 0.14;
+        float follow = 0.8;
+        float follow2 = 2.0;
+        float follow3 = 1.5;
+  
+        
+       /* moveFollow->setValue("node", gScene.nodes["follow"]);
+        moveFollow->setValue("target", gScene.nodes["player"]);
         moveFollow->setValue("followDist", &follow);
         moveFollow->setValue("followSpeed", &follows);
         moveFollow->useFollowPlayer = true;
-        moveFollow->useFacePlayer = true;
+        moveFollow->useFaceTarget= true;
+        
+        moveFollow2->setValue("node", gScene.nodes["follow2"]);
+        moveFollow2->setValue("target", gScene.nodes["player"]);
+        moveFollow2->setValue("followDist", &follow2);
+        moveFollow2->setValue("followSpeed", &follows);
+        moveFollow2->useFollowPlayer = true;
+        moveFollow2->useFaceTarget = true;
+        
+        moveFollow3->setValue("node", gScene.nodes["follow3"]);
+        moveFollow3->setValue("target", gScene.nodes["player"]);
+        moveFollow3->setValue("followDist", &follow3);
+        moveFollow3->setValue("followSpeed", &follows);
+        moveFollow3->useFollowPlayer = true;
+        moveFollow3->useFaceTarget = true;*/
         
         
     }
+
+    
+    for(int i = 0; i < 4; i++)
+    {
+        spawn = new SpawnScript();
+        Node* move = gScene.nodes["spawn"];
+        spawn->node = new Node;
+        *spawn->node = *move;
+        spawn->camera = &gScene.camera;
+        spawn->useSpawn = true;
+        spawn->spawnloc = glm::vec3(1,1,0);
+        gScene.spawnScripts.push_back(spawn);
+        spawn->spawnloc += glm::vec3(1,0,0);
+    }
+    
 }
 
 
