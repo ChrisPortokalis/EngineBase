@@ -1423,6 +1423,12 @@ void MoveScript::runScripts()
 
 void Scene::runScripts()
 {
+    
+    
+    for(int i = 0; i < spawnScripts.size(); i++)
+    {
+        spawnScripts[i]->runScripts();
+    }
     for(int i = 0; i < controlScripts.size(); i++)
     {
         controlScripts[i]->runScripts();
@@ -1433,11 +1439,7 @@ void Scene::runScripts()
         
         x.second->runScripts();
     }
-    
-    for(int i = 0; i < spawnScripts.size(); i++)
-    {
-        spawnScripts[i]->runScripts();
-    }
+
     
     
    
@@ -1461,21 +1463,22 @@ void Scene::drawSpawns()
 
 void SpawnScript::spawnNode()
 {
-    node->meshInst->T.translation = spawnloc;
+
     
    // cout << "Spawn X loc = " << node->meshInst->T.translation.x << endl;
   
     std::ostringstream oss;
     oss << numOfSpawn;
-    cout << "spawn Num = " << spawnNum << endl;
+    //cout << "spawn Num = " << spawnNum << endl;
     name = name + oss.str();
-    Node* newNode = scene->nodes["baseNode"];
+    Node* newNode = copyNode;
     node = new Node();
     *node = *newNode;
     node->name = name;
-    TriMeshInstance* newInst = scene->nodes["baseNode"]->meshInst;
+    TriMeshInstance* newInst = copyNode->meshInst;
     node->meshInst = new TriMeshInstance;
     *node->meshInst = *newInst;
+    node->meshInst->T.translation = spawnloc;
     
     if(useMove)
     {
@@ -1484,21 +1487,27 @@ void SpawnScript::spawnNode()
     
     
     scene->nodes[name] = this->node;
-    int i = 1;
+    int i = 0;
 }
 
 void SpawnScript::attachMoveScript()
 {
-    MoveScript* ms = scene->moveScripts["rotateObj"];
+    MoveScript* ms = moveScript;
     MoveScript* newMS = new MoveScript();
     
     *newMS = *ms;
     newMS->node = node;
+    
+    /*if(moveScript->useFollowPlayer || moveScript->useFaceTarget)
+    {
+        newMS->targetNode = this->targetNode;
+        
+    }*/
+    
+    
     scene->moveScripts[name] = newMS;
     
     cout << name << endl;
-    
-    
 }
 
 void SpawnScript::runScripts()

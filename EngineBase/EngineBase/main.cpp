@@ -581,17 +581,30 @@ void loadMoveScript(FILE* F, Scene* scene)
         {
             moveScript->useLimitedTrans = true;
         }
-        else if(token == "followPlayer")
+        else if(token == "followTarget")
         {
             moveScript->useFollowPlayer = true;
         }
-        else if(token == "faceTarge")
+        else if(token == "faceTarget")
         {
             moveScript->useFaceTarget = true;
         }
     }
     
     scene->moveScripts[name] = moveScript;
+    
+}
+
+void loadSpawnScript(FILE* f, Scene* scene)
+{
+    
+    string token;
+    SpawnScript* spawn = new SpawnScript();
+    spawn->camera = &scene->camera;
+    string name;
+
+    
+    
     
 }
 
@@ -666,11 +679,11 @@ void update(void)
     gScene.updateFirstPerson( gWidth, gHeight);
     gScene.updateListenerPos(engine);
     
-    gScene.runScripts();
-    moveScript->runScripts();
-    moveFollow->runScripts();
-    moveFollow2->runScripts();
-    moveFollow3->runScripts();
+    
+    //moveScript->runScripts();
+    //moveFollow->runScripts();
+   // moveFollow2->runScripts();
+    //moveFollow3->runScripts();
     //spawn->runScripts();
     
     gScene.camera.refreshTransform(gWidth, gHeight);
@@ -688,6 +701,7 @@ void update(void)
 void render(void)
 {
 	gScene.render();
+    gScene.runScripts();
 }
 
 //-------------------------------------------------------------------------//
@@ -774,7 +788,7 @@ void setupScript()
     {
 
         
-        float follows = 0.14;
+        float follows = 0.04;
         float follow = 0.8;
         float follow2 = 2.0;
         float follow3 = 1.5;
@@ -801,40 +815,29 @@ void setupScript()
         moveFollow3->useFollowPlayer = true;
         moveFollow3->useFaceTarget = true;
         
-        
+        gScene.moveScripts["follow"] = moveFollow;
     }
+
+
+  
 
     if(gScene.nodes["baseNode"] != NULL)
     {
+
         for(int i = 0; i < 4; i++)
         {
-        spawn = new SpawnScript();
-        spawn->node = gScene.nodes["baseNode"];
-        spawn->camera = &gScene.camera;
-        spawn->useSpawn = true;
-        spawn->useMove = true;
-        spawn->scene = &gScene;
-        spawn->spawnloc = glm::vec3(1+i,1,0);
-        spawn->spawnNode();
-        //gScene.spawnScripts.push_back(spawn);
-        //spawn->spawnloc += glm::vec3(1,0,0);
+            spawn = new SpawnScript();
+            spawn->camera = &gScene.camera;
+            spawn->useSpawn = true;
+            spawn->useMove = true;
+            spawn->scene = &gScene;
+            spawn->spawnloc = glm::vec3(4+i,4,-10);
+            gScene.moveScripts["follow1"]->useFollowPlayer = true;
+            spawn->moveScript = gScene.moveScripts["follow1"];
+            spawn->copyNode = gScene.nodes["baseNode"];
+            spawn->spawnNode();
         }
     }
-
-    
-    for(int i = 0; i < 4; i++)
-    {
-        spawn = new SpawnScript();
-        Node* move = gScene.nodes["baseNode"];
-        spawn->node = new Node;
-        *spawn->node = *move;
-        spawn->camera = &gScene.camera;
-        spawn->useSpawn = true;
-        spawn->spawnloc = glm::vec3(1,1,0);
-        //gScene.spawnScripts.push_back(spawn);
-        //spawn->spawnloc += glm::vec3(1,0,0);
-    }
-    
 }
 
 

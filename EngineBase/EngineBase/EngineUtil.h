@@ -854,16 +854,24 @@ public:
     
     bool useSpawn;
     bool useMove;
-    int spawnCount;
+    
     Node* node;
+    Node* copyNode;
+    Node* targetNode;
+    
+    MoveScript* moveScript;
+    
     Scene* scene;
-    string nameOfMoveScript;
+    
     static int spawnNum;
     int numOfSpawn;
+    
     string name;
+    string nameOfMoveScript;
+    
     Camera* camera;
+    
     glm::vec3 spawnloc;
-    MoveScript* moveScript;
     
     
     SpawnScript()
