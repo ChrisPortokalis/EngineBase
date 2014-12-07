@@ -1075,6 +1075,29 @@ void ControlScript::setValue(string property, void* value)
      {
          //gScene.nextCamera(gWidth, gHeight);
      }
+     
+     if(glfwGetKey(gWindow, GLFW_KEY_SPACE) == GLFW_PRESS)// && glfwGetKey(gWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
+     {
+         //SLEEP(20);
+         if(playerPresent && glfwGetKey(gWindow, GLFW_KEY_SPACE) == GLFW_RELEASE)
+         {
+             if(scene->baseNodes["baseNodeBullet"] != NULL)
+             {
+                 MoveScript* MS = new MoveScript();
+                 MS->maxDist = 50;
+                 MS->followSpeed = 1.0;
+                 MS->scene = scene;
+                 MS->useBulletTrans = true;
+                 
+                 SpawnScript* newSpawn = new SpawnScript();
+                 newSpawn->camera = &scene->camera;
+                 newSpawn->scene = scene;
+                 newSpawn->moveScript = MS;
+                 newSpawn->copyNode = scene->baseNodes["baseNodeBullet"];
+                 newSpawn->spawnBullet();
+             }
+         }
+     }
  
      scene->camera.refreshTransform((float)width, (float)height);
  }
@@ -1083,9 +1106,11 @@ void ControlScript::firstPersonControls()
 {
     if(scene->nodes["player"] != NULL)
     {
-        scene->camera.eye = scene->nodes["player"]->meshInst->T.translation + ( scene->nodes["player"]->meshInst->T.rotation * glm::vec3(0,0,1)) * 1.0f + -0.1f * glm::vec3(0,1,0);
-        scene->camera.center = scene->nodes["player"]->meshInst->T.translation + 0.1f * glm::vec3(0,1,0);
+        scene->camera.eye = scene->nodes["player"]->meshInst->T.translation + ( scene->nodes["player"]->meshInst->T.rotation * glm::vec3(0,0,1)) * 20.0f + 2.0f * glm::vec3(0,1,0);
+        scene->camera.center = scene->nodes["player"]->meshInst->T.translation + 2.0f * glm::vec3(0,1,0);
         scene->camera.refreshTransform(width, height);
+        
+        //cout << scene->camera.center.x << endl << "eye = " << scene->camera.eye.z << endl;
     }
 
 }
@@ -1094,9 +1119,11 @@ void ControlScript::thirdPersonControls()
 {
     if(scene->nodes["player"] != NULL)
     {
-        scene->camera.eye = scene->nodes["player"]->meshInst->T.translation + (scene->nodes["player"]->meshInst->T.rotation * glm::vec3(0,0,1)) * 20.0f + 5.0f * glm::vec3(0,1,0);
-        scene->camera.center = scene->nodes["player"]->meshInst->T.translation + 3.0f * glm::vec3(0,1,0);
+        scene->camera.eye = scene->nodes["player"]->meshInst->T.translation + (scene->nodes["player"]->meshInst->T.rotation * glm::vec3(0,0,1)) * 5.0f + 5.0f * glm::vec3(0,1,0);
+        scene->camera.center = scene->nodes["player"]->meshInst->T.translation + 1.0f * glm::vec3(0,1,0);
         scene->camera.refreshTransform(width, height);
+        
+        
     }
     
 }
@@ -1111,11 +1138,12 @@ void ControlScript::runScripts(){
     if(thirdPerson)
     {
         thirdPersonControls();
+        //cout << "third" << endl;
     }
-    
-    if(firstPerson)
+    else
     {
         firstPersonControls();
+        //cout << "first" << endl;
     }
 }
 
@@ -1379,6 +1407,24 @@ void MoveScript::faceTarget()
     node->meshInst->T.rotation *= glm::quat(cos(angleX / 2), glm::vec3(sin(angleX / 2), 0, 0));
 }
 
+
+void MoveScript::bulletTranslation()
+{
+    if(scene->nodes["player"] != NULL)
+    {
+        node->meshInst->T.translateLocal(glm::vec3(0,0,-followSpeed), scene->camera);
+        distCounter += followSpeed;
+        if(distCounter >= maxDist)
+        {
+            scene->nodes.erase(node->name);
+            useBulletTrans = false;
+            //delete this;
+        }
+    }
+    
+    
+}
+
 void MoveScript::runScripts()
 {
     if(useFaceTarget)
@@ -1413,6 +1459,10 @@ void MoveScript::runScripts()
     {
         followPlayer();
     }
+    if(useBulletTrans)
+    {
+        bulletTranslation();
+    }
 
 }
 
@@ -1438,21 +1488,12 @@ void Scene::runScripts()
     {
         
         x.second->runScripts();
+        int i = 0;
     }
 
     
     
    
-}
-
-void Scene::drawSpawns()
-{
-    for(int i = 0; i <spawnScripts.size(); i++)
-    {
-        //c/out << "Spawn Y: " << spawnScripts[i]->node->meshInst->T.translation.x << endl;
-        //spawnScripts[i]->spawnNode();
-    }
-    
 }
 
 
@@ -1462,11 +1503,7 @@ void Scene::drawSpawns()
 
 
 void SpawnScript::spawnNode()
-{
-
-    
-   // cout << "Spawn X loc = " << node->meshInst->T.translation.x << endl;
-  
+{  
     std::ostringstream oss;
     oss << numOfSpawn;
     //cout << "spawn Num = " << spawnNum << endl;
@@ -1480,11 +1517,15 @@ void SpawnScript::spawnNode()
     *node->meshInst = *newInst;
     node->meshInst->T.translation = spawnloc;
     
-    if(useMove)
+    if(didSpawnBullet)
+    {
+        node->meshInst->T.rotation = scene->nodes["player"]->meshInst->T.rotation;
+    }
+    
+    if(moveScript != NULL)
     {
         attachMoveScript();
     }
-    
     
     scene->nodes[name] = this->node;
     int i = 0;
@@ -1497,17 +1538,21 @@ void SpawnScript::attachMoveScript()
     
     *newMS = *ms;
     newMS->node = node;
+    moveScript = newMS;
     
-    /*if(moveScript->useFollowPlayer || moveScript->useFaceTarget)
-    {
-        newMS->targetNode = this->targetNode;
-        
-    }*/
-    
-    
-    scene->moveScripts[name] = newMS;
+    scene->moveScripts[name] = moveScript;
     
     cout << name << endl;
+}
+
+void SpawnScript::spawnBullet()
+{
+    if(scene->nodes["player"] != NULL)
+    {
+        spawnloc = scene->nodes["player"]->meshInst->T.translation;
+        didSpawnBullet = true;
+        spawnNode();
+    }
 }
 
 void SpawnScript::runScripts()

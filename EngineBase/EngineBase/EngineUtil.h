@@ -549,6 +549,7 @@ public:
 	map<string, Node*> nodes;
 	map<string, TriMeshInstance*> meshInstances;
     map<string,MoveScript*> moveScripts;
+    map<string, Node*> baseNodes;
     vector<ControlScript*> controlScripts;
     vector<SpawnScript*> spawnScripts;
     Node* player;
@@ -564,10 +565,7 @@ public:
     
     //member functions
     void runScripts();
-    void drawSpawns();
-    
-    
-    void updateFirstPerson(int width, int height)
+    /*void updateFirstPerson(int width, int height)
     {
         
         
@@ -593,7 +591,7 @@ public:
         {
             
         }
-    }
+    }*/
     
     
     void updateListenerPos(ISoundEngine* sEngine)
@@ -682,20 +680,14 @@ public:
 
         renderNodes();
         renderBBoards();
-        drawSpawns();
-        
-        
-        //swmeshInstances["monkey1"]->draw(camera);
-        //cout << "";
 	}
     
     void renderNodes(void)
     {
-
+        string nameSub;
         for (auto& x : nodes){
             
-            
-            if(x.second->parent == NULL && x.second->name.find("baseNode") == string::npos)
+            if(x.second->parent == NULL)
             {
                 //cout << "Node Name" << x.second->name << endl;
                 x.second->draw(camera);
@@ -786,10 +778,13 @@ public:
         useLocalRotate = false;
         useLocalTrans = false;
         useSetScale = false;
+        useBulletTrans = false;
+        distCounter = 0;
     }
     
     Node* node;
     Node* targetNode;
+    Scene* scene;
     string name;
     glm::vec3 transVec;
     glm::vec3 scaleVec;
@@ -811,6 +806,8 @@ public:
     //follow floats for followPlayer script
     float followSpeed;
     float followDist;
+    float maxDist;
+    int distCounter;
     
     
     //utils
@@ -830,6 +827,7 @@ public:
     void localTransLimited();  //moves an object to a maximum position then moves back to original position
     void followPlayer();
     void faceTarget();
+    void bulletTranslation();
     
     //bools for what script to run
     bool useGlobalRotate;
@@ -840,6 +838,7 @@ public:
     bool useLimitedTrans;
     bool useFollowPlayer;
     bool useFaceTarget;
+    bool useBulletTrans;
     bool minSet;
     
     
@@ -854,6 +853,7 @@ public:
     
     bool useSpawn;
     bool useMove;
+    bool didSpawnBullet;
     
     Node* node;
     Node* copyNode;
@@ -878,6 +878,7 @@ public:
     {
         useSpawn = false;
         useMove = false;
+        didSpawnBullet = false;
         name = "spawn";
         numOfSpawn = spawnNum++;
     }
@@ -885,6 +886,7 @@ public:
     
     void spawnNode();
     void attachMoveScript();
+    void spawnBullet();
     void runScripts();
     
 };

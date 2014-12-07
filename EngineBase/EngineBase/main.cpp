@@ -426,7 +426,6 @@ void loadControlScript(FILE* F, Scene* scene)
         {
             controlScript->useThirdPerson(true);
         }
-            
         else if(token == "firstPerson")
         {
             controlScript->useFirstPerson(true);
@@ -461,6 +460,12 @@ void loadMoveScript(FILE* F, Scene* scene)
             
             moveScript->node = scene->nodes[nodeName];
             
+        }
+        else if(token == "baseNode")
+        {
+            string nodeName;
+            getToken(F, nodeName, ONE_TOKENS);
+            moveScript->node = scene->baseNodes[nodeName];
         }
         else if(token == "name")
         {
@@ -557,6 +562,13 @@ void loadMoveScript(FILE* F, Scene* scene)
             getFloats(F, &targetTrans[0],3);
             moveScript->targetTrans = targetTrans;
         }
+        else if(token == "maxDist")
+        {
+            float maxDist;
+            getFloats(F, &maxDist, 1);
+            moveScript->maxDist = maxDist;
+            
+        }
         else if(token == "globalRotate")
         {
             moveScript->useGlobalRotate = true;
@@ -589,13 +601,17 @@ void loadMoveScript(FILE* F, Scene* scene)
         {
             moveScript->useFaceTarget = true;
         }
+        else if(token == "bulletTrans")
+        {
+            moveScript->useBulletTrans = true;
+        }
     }
     
     scene->moveScripts[name] = moveScript;
     
 }
 
-void loadSpawnScript(FILE* f, Scene* scene)
+void loadSpawnScript(FILE* F, Scene* scene)
 {
     
     string token;
@@ -603,9 +619,60 @@ void loadSpawnScript(FILE* f, Scene* scene)
     spawn->camera = &scene->camera;
     string name;
 
+    while(getToken(F,token,ONE_TOKENS))
+    {
+        
+        
+        
+        
+    }
+}
+
+void loadBaseNode(FILE* F, Scene* scene)
+{
+    string token;
+    string nodeName;
+    Node *node = new Node();
     
     
+    while (getToken(F, token, ONE_TOKENS)) {
+        if (token == "}") break;
+        else if (token == "meshInstance"){
+            
+            string name;
+            getToken(F, name, ONE_TOKENS);
+            //node->meshInst = gScene.meshInstances[name];
+            // node = new Node(gScene.meshInstances[name]);
+            TriMeshInstance* meshInst = gScene.meshInstances[name];
+            node->meshInst = new TriMeshInstance;
+            *node->meshInst = *meshInst;
+            
+            
+            cout <<"" << endl;
+        }
+        else if (token == "name"){
+            
+            getToken(F, nodeName, ONE_TOKENS);
+            node->name = nodeName;
+           // cout << "Node Name: " << name << endl;
+        }
+        else if (token == "parent"){
+            string parent;
+            getToken(F, parent, ONE_TOKENS);
+            
+            cout << "Parent Name: " << parent << endl;
+            if (gScene.nodes.find(parent)->second == NULL && gScene.player != NULL){
+                printf("Error: Can't find parent\n");
+            }
+            else{
+                gScene.nodes[parent]->addChildren(node);
+                node->parent = gScene.nodes[parent];
+            }
+        }
+    }
     
+    
+    scene->baseNodes[nodeName] = node;
 }
 
 void loadScene(const char *sceneFile, Scene *scene)
@@ -644,6 +711,10 @@ void loadScene(const char *sceneFile, Scene *scene)
 		else if (token == "node"){
 			loadNode(F, scene);
 		}
+        else if(token == "baseNode")
+        {
+            loadBaseNode(F, scene);
+        }
 		else if (token == "billboard"){
 			loadBillboard(F, scene);
 		}
@@ -657,7 +728,7 @@ void loadScene(const char *sceneFile, Scene *scene)
         }
         else if(token == "spawnScript")
         {
-            
+            loadSpawnScript(F,scene);
         }
         
 	}
@@ -676,7 +747,7 @@ void update(void)
 {	
 	glm::vec3 cameraPos = gScene.camera.eye;
 	glm::vec3 cameraRot = gScene.camera.center;
-    gScene.updateFirstPerson( gWidth, gHeight);
+    //gScene.updateFirstPerson( gWidth, gHeight);
     gScene.updateListenerPos(engine);
     
     
@@ -700,6 +771,7 @@ void update(void)
 
 void render(void)
 {
+    
 	gScene.render();
     gScene.runScripts();
 }
@@ -747,6 +819,7 @@ int main(int numArgs, char **args)
 	// render loop
 	while (true) {
 		// update and render
+        //SLEEP(30);
 		update();
 		render();
 		glfwGetWindowSize(gWindow, &gWidth, &gHeight);
@@ -764,7 +837,7 @@ int main(int numArgs, char **args)
 		startTime = endTime;
         
 		// swap buffers
-		//SLEEP(1); // sleep 1 millisecond to avoid busy waiting
+		SLEEP(1); // sleep 1 millisecond to avoid busy waiting
 		glfwSwapBuffers(gWindow);
 	}
 
@@ -821,10 +894,10 @@ void setupScript()
 
   
 
-    if(gScene.nodes["baseNode"] != NULL)
+    if(gScene.baseNodes["baseNode"] != NULL)
     {
 
-        for(int i = 0; i < 4; i++)
+        /*for(int i = 0; i < 4; i++)
         {
             spawn = new SpawnScript();
             spawn->camera = &gScene.camera;
@@ -836,7 +909,7 @@ void setupScript()
             spawn->moveScript = gScene.moveScripts["follow1"];
             spawn->copyNode = gScene.nodes["baseNode"];
             spawn->spawnNode();
-        }
+        }*/
     }
 }
 
