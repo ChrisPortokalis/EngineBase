@@ -489,6 +489,57 @@ extern Light gLights[MAX_LIGHTS];
 void initLightBuffer(void);
 
 //-------------------------------------------------------------------------//
+//  Particle System
+//-------------------------------------------------------------------------//
+#define MAX_PARTICLES 10000
+#define PS_FOUNTAIN 0
+#define PS_EXPLOSION 1
+
+class Particle{
+public:
+	Transform T;
+	glm::vec3 Vel, Accel;
+	Billboard instance;
+	float life;
+
+	Particle(glm::vec3 VelMag, glm::vec3 _Pos, glm::vec3 _Accel, float _life, Billboard inst, int type);
+
+	bool isDead(){
+		if (life < 0.0)
+			return true;
+		else
+			return false;
+	}
+	void update();
+	void render(Camera &camera);
+};
+
+class partSys{
+public:
+	vector<Particle> particles;
+
+	Billboard bb;
+	glm::vec3 Origin, Vel, Accel, VelMag;
+	float duration, life;
+	int type;
+
+	partSys(glm::vec3 Pos, glm::vec3 Vel, glm::vec3 Accel, glm::vec3 VelMag, Billboard _bb, float _duration, float _life, int _type);
+
+	void initPS();
+	void addParticle();
+	void update();
+	void render(Camera &camera);
+
+	bool isDead(){
+		if (particles[0].life < 0.0)
+			return true;
+		else
+			return false;
+	}
+};
+
+
+//-------------------------------------------------------------------------//
 //  Scene Graph Node
 //-------------------------------------------------------------------------//
 
@@ -560,7 +611,8 @@ public:
 	// Scene graph
 	Camera camera;
 	int currCam = 0;
-	vector<Billboard*> bboards;
+	vector<Billboard> bboards;
+	vector<partSys> ps;
 	vector<Camera> cameras;
     
     //member functions
@@ -651,7 +703,10 @@ public:
 		else{
 			printf("cant find parent\n"); return NULL;}
 	}
-	void addBillboard(Billboard* board){ bboards.push_back(board); }
+	void addBillboard(Billboard board){ bboards.push_back(board); }
+
+	void addParticleSystem(partSys partsys){ ps.push_back(partsys); }
+	void removeParticleSystem(int index){ ps.erase(ps.begin() + index); }
 
 	// multi cam functions
 	void switchCamera(int camNum){
@@ -680,6 +735,7 @@ public:
 
         renderNodes();
         renderBBoards();
+		renderPartSys();
 	}
     
     void renderNodes(void)
@@ -713,10 +769,20 @@ public:
     {
         for(int i = 0; i < bboards.size(); i++)
         {
-            bboards[i]->draw(camera);
+            bboards[i].draw(camera);
         }
     }
 
+	void renderPartSys()
+	{
+		for (int i = 0; i < ps.size(); i++){
+			ps.at(i).update();
+			ps.at(i).render(camera);
+			if (ps.at(i).isDead()){
+				removeParticleSystem(i);
+			}
+		}
+	}
     
 };
 

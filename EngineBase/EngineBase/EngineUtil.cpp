@@ -1569,7 +1569,75 @@ void SpawnScript::runScripts()
 
 int SpawnScript::spawnNum = 0;
 
+//*****************
+//Particle System Functions
+//****************
 
+Particle::Particle(glm::vec3 VelMag, glm::vec3 _Pos, glm::vec3 _Accel, float _life, Billboard inst, int type){
+	if (type == PS_EXPLOSION){
+		Vel = glm::vec3(glm::linearRand(-VelMag.x, VelMag.x), glm::linearRand(-VelMag.y, VelMag.y), glm::linearRand(-VelMag.z, VelMag.z));
+	}
+	if (type == PS_FOUNTAIN){
+		Vel = glm::vec3(glm::linearRand(-VelMag.x, VelMag.x), glm::linearRand(0.0f, VelMag.y), glm::linearRand(-VelMag.z, VelMag.z));
+	}
+	T.translation = _Pos;
+	Accel = _Accel;
+	instance = inst;
+	life = _life;
+	instance.setTranslation(T.translation); //This is broken!
+}
+
+void Particle::update(){
+	T.translation = T.translation + Vel;
+	Vel = Vel + Accel;
+	life -= 1.0;
+	instance.setTranslation(T.translation);
+	instance.setScale(instance.T.scale * (life / 1000));
+}
+void Particle::render(Camera &camera){
+	instance.draw(camera);
+}
+
+
+void partSys::initPS(){
+	Particle emitter(glm::vec3(0, 0, 0), Origin, glm::vec3(0, 0, 0), duration, bb, type);
+	particles.push_back(emitter);
+}
+
+void partSys::addParticle(){
+	Particle p(VelMag, Origin, Accel, life, bb, type);
+	particles.push_back(p);
+}
+
+void partSys::update(){
+	for (int i = particles.size() - 1; i > 0; i--){
+		Particle p = particles.at(i);
+		particles.at(i).update();
+		if (p.isDead()){
+			particles.erase(particles.begin() + i);
+		}
+	}
+	particles[0].update();
+}
+
+void partSys::render(Camera &camera){
+	for (int i = particles.size() - 1; i >= 0; i--){
+		particles[i].render(camera);
+	}
+	addParticle();
+}
+
+partSys::partSys(glm::vec3 Pos, glm::vec3 _Vel, glm::vec3 _Accel, glm::vec3 _VelMag, Billboard _bb, float _duration, float _life, int _type){
+	Origin = Pos;
+	Vel = _Vel;
+	Accel = _Accel;
+	VelMag = _VelMag;
+	bb = _bb;
+	duration = _duration;
+	life = _life;
+	type = _type;
+	initPS();
+}
 
 
 

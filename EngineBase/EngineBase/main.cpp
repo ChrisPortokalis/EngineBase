@@ -336,7 +336,7 @@ void loadBillboard(FILE *F, Scene *scene){
 	GLuint vertexShader = NULL_HANDLE;
 	GLuint fragmentShader = NULL_HANDLE;
 	GLuint shaderProgram = NULL_HANDLE;
-	Billboard* board = new Billboard();
+	Billboard board;
 
 	while (getToken(F, token, ONE_TOKENS)){
 		if (token == "}") {
@@ -367,7 +367,7 @@ void loadBillboard(FILE *F, Scene *scene){
 				scene->addTexture(image);
 			}
 			NameIdVal<RGBAImage*> texref(texAttributeName, -1, image);
-			board->mat.textures.push_back(texref);
+			board.mat.textures.push_back(texref);
 		}
 
 		else if (token == "mesh") {
@@ -380,29 +380,66 @@ void loadBillboard(FILE *F, Scene *scene){
 				mesh->sendToOpenGL();
 				scene->addMesh(mesh);
 			}
-			board->setMesh(mesh);
+			board.setMesh(mesh);
 		}
 		else if (token == "type"){
 			int t;
 			getInts(F, &t, 1);
-			board->type = t;
+			board.type = t;
 		}
 
 		else if (token == "translate"){
 			glm::vec3 t;
 			getFloats(F, &t[0], 3);
-			board->T.translation += t;
+			board.T.translation += t;
 		}
 
 		else if (token == "name"){
 			string name;
 			getToken(F, name, ONE_TOKENS);
-			board->name = name;
+			board.name = name;
 		}
 	}
 	shaderProgram = createShaderProgram(vertexShader, fragmentShader);
-	board->mat.shaderProgram = shaderProgram;
+	board.mat.shaderProgram = shaderProgram;
 	scene->addBillboard(board);
+}
+
+void loadPartSys(FILE *F, Scene *scene){
+	string token;
+	glm::vec3 pos, vel, accel, velmag;
+	int in, type;
+	float life, duration;
+	Billboard bb;
+	while (getToken(F, token, ONE_TOKENS)){
+		if (token == "}"){
+			break;
+		}
+		else if (token == "position"){
+			getFloats(F, &pos[0], 3);
+		}
+		else if (token == "acceleration"){
+			getFloats(F, &accel[0], 3);
+		}
+		else if (token == "random"){
+			getFloats(F, &velmag[0], 3);
+		}
+		else if (token == "billboard"){
+			getInts(F, &in, 1);
+			bb = scene->bboards.at(in);
+		}
+		else if (token == "life"){
+			getFloats(F, &life, 1);
+		}
+		else if (token == "duration"){
+			getFloats(F, &duration, 1);
+		}
+		else if (token == "type"){
+			getInts(F, &type, 1);
+		}
+	}
+	partSys p(pos, vel, accel, velmag, bb, duration, life, type);
+	scene->addParticleSystem(p);
 }
 
 void loadControlScript(FILE* F, Scene* scene)
