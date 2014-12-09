@@ -767,6 +767,10 @@ void loadScene(const char *sceneFile, Scene *scene)
         {
             loadSpawnScript(F,scene);
         }
+        else if(token == "particleSystem")
+        {
+            loadPartSys(F,scene);
+        }
         
 	}
 }
@@ -808,7 +812,8 @@ void update(void)
 
 void render(void)
 {
-    
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	gScene.render();
     gScene.runScripts();
 }

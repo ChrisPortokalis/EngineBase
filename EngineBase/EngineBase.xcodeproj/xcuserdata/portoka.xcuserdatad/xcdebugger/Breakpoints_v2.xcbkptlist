@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "EngineBase/main.cpp"
-            timestampString = "439630434.625351"
+            timestampString = "439858749.108168"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1116"
-            endingLineNumber = "1116">
+            startingLineNumber = "1122"
+            endingLineNumber = "1122">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -24,11 +24,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "EngineBase/main.cpp"
-            timestampString = "439630434.625351"
+            timestampString = "439858749.108168"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1116"
-            endingLineNumber = "1116">
+            startingLineNumber = "1122"
+            endingLineNumber = "1122">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -89,8 +89,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "519"
             endingLineNumber = "519"
-            landmarkName = "rotateGlobal(glm::vec3 axis, float angle, bool inverse)"
-            landmarkType = "5">
+            landmarkName = "class partSys"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -149,7 +149,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "652"
             endingLineNumber = "652"
-            landmarkName = "getNode(string &amp;n)"
+            landmarkName = "updateListenerPos(ISoundEngine* sEngine)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -160,7 +160,21 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "EngineBase/main.cpp"
-            timestampString = "439630434.625351"
+            timestampString = "439858749.108168"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1073"
+            endingLineNumber = "1073">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "EngineBase/main.cpp"
+            timestampString = "439858749.108168"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "1067"
@@ -174,11 +188,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "EngineBase/main.cpp"
-            timestampString = "439630434.625351"
+            timestampString = "439858749.108168"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1061"
-            endingLineNumber = "1061">
+            startingLineNumber = "1068"
+            endingLineNumber = "1068">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -188,25 +202,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "EngineBase/main.cpp"
-            timestampString = "439630434.625351"
+            timestampString = "439858749.108168"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1062"
-            endingLineNumber = "1062">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "EngineBase/main.cpp"
-            timestampString = "439630434.625351"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1063"
-            endingLineNumber = "1063">
+            startingLineNumber = "1069"
+            endingLineNumber = "1069">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -274,11 +274,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "EngineBase/main.cpp"
-            timestampString = "439630434.625351"
+            timestampString = "439858749.108168"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "988"
-            endingLineNumber = "988">
+            startingLineNumber = "994"
+            endingLineNumber = "994">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -288,11 +288,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "EngineBase/main.cpp"
-            timestampString = "439630434.625351"
+            timestampString = "439858749.108168"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "950"
-            endingLineNumber = "950">
+            startingLineNumber = "956"
+            endingLineNumber = "956"
+            landmarkName = "setupScript()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -307,7 +309,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "751"
             endingLineNumber = "751"
-            landmarkName = "update(void)"
+            landmarkName = "loadScene(const char *sceneFile, Scene *scene)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -322,7 +324,9 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "904"
-            endingLineNumber = "904">
+            endingLineNumber = "904"
+            landmarkName = "class MoveScript"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -332,11 +336,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "EngineBase/main.cpp"
-            timestampString = "439630434.625351"
+            timestampString = "439858749.108168"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1040"
-            endingLineNumber = "1040">
+            startingLineNumber = "1046"
+            endingLineNumber = "1046">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -388,12 +392,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "EngineBase/main.cpp"
-            timestampString = "439628148.47283"
+            timestampString = "439858427.281435"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "798"
-            endingLineNumber = "798"
-            landmarkName = "main(int numArgs, char **args)"
+            startingLineNumber = "803"
+            endingLineNumber = "803"
+            landmarkName = "update(void)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -500,11 +504,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "EngineBase/main.cpp"
-            timestampString = "439630434.625351"
+            timestampString = "439858749.108168"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "838"
-            endingLineNumber = "838"
+            startingLineNumber = "844"
+            endingLineNumber = "844"
             landmarkName = "main(int numArgs, char **args)"
             landmarkType = "7">
          </BreakpointContent>
@@ -516,12 +520,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "EngineBase/main.cpp"
-            timestampString = "439628148.47283"
+            timestampString = "439858427.281435"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "791"
-            endingLineNumber = "791"
-            landmarkName = "main(int numArgs, char **args)"
+            startingLineNumber = "796"
+            endingLineNumber = "796"
+            landmarkName = "update(void)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -580,11 +584,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "EngineBase/main.cpp"
-            timestampString = "439630434.625351"
+            timestampString = "439858749.108168"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "854"
-            endingLineNumber = "854">
+            startingLineNumber = "860"
+            endingLineNumber = "860"
+            landmarkName = "main(int numArgs, char **args)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -788,7 +794,9 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "740"
-            endingLineNumber = "740">
+            endingLineNumber = "740"
+            landmarkName = "loadScene(const char *sceneFile, Scene *scene)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -802,7 +810,9 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "738"
-            endingLineNumber = "738">
+            endingLineNumber = "738"
+            landmarkName = "loadScene(const char *sceneFile, Scene *scene)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -817,8 +827,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "877"
             endingLineNumber = "877"
-            landmarkName = "SpawnScript()"
-            landmarkType = "5">
+            landmarkName = "class MoveScript"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -1132,12 +1142,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "EngineBase/main.cpp"
-            timestampString = "439630434.625351"
+            timestampString = "439858749.108168"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "887"
-            endingLineNumber = "887"
-            landmarkName = "setupScript()"
+            startingLineNumber = "893"
+            endingLineNumber = "893"
+            landmarkName = "main(int numArgs, char **args)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1217,8 +1227,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "690"
             endingLineNumber = "690"
-            landmarkName = "renderNodes(void)"
-            landmarkType = "5">
+            landmarkName = "class Scene"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy

@@ -1592,7 +1592,7 @@ void Particle::update(){
 	Vel = Vel + Accel;
 	life -= 1.0;
 	instance.setTranslation(T.translation);
-	instance.setScale(instance.T.scale * (life / 1000));
+	//instance.setScale(instance.T.scale * (life / 1000));
 }
 void Particle::render(Camera &camera){
 	instance.draw(camera);
